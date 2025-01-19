@@ -1,6 +1,8 @@
 // vec.hpp
 #ifndef VEC_H
 #define VEC_H
+#include <vcruntime_typeinfo.h>
+
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
@@ -17,6 +19,12 @@ concept Vec = requires(T a) {
     T::itemtype;
     { T::length } -> std::same_as<const size_t&>;
     { a[T::length - 1] } -> std::same_as<typename T::ItemType&>;
+};
+template <typename _Vec, class _Item>
+concept VecItem = requires {
+    Vec<_Vec>;
+    requires std::convertible_to<typename _Vec::ItemType, _Item> ||
+                 std::convertible_to<_Item, typename _Vec::ItemType>;
 };
 template <class _Tp>
 static constexpr auto get_item_zero() {
@@ -53,6 +61,7 @@ class vec {
         }
         return res;
     }
+    // constructor
     template <typename... V, size_t _len = _length>
         requires(sizeof...(V) < _len) &&
                 ((std::convertible_to<const V&, const _Tp&>) && ...)
@@ -83,6 +92,29 @@ class vec {
         }
     }
     constexpr vec() {}
+    // computional methods
+    vec<_Tp, _length> cross(const vec<_Tp, _length>& other) const {
+        vec<_Tp, _length> res;
+        res[0] = data[1] * other[2] - data[2] * other[1];
+        res[1] = data[2] * other[0] - data[0] * other[2];
+        res[2] = data[0] * other[1] - data[1] * other[0];
+        return res;
+    }
+    _Tp dot(const vec<_Tp, _length>& other) const {
+        _Tp res = _Tp{};
+        for (size_t i = 0; i < _length; i++) {
+            res += data[i] * other[i];
+        }
+        return res;
+    }
+    vec<_Tp, _length> normalize() const {
+        vec<_Tp, _length> res;
+        _Tp len = length;
+        for (size_t i = 0; i < _length; i++) {
+            res[i] = data[i] / len;
+        }
+        return res;
+    }
 };
 
 template <typename T>
@@ -172,6 +204,61 @@ inline auto operator/(const _Tp1& self, const _Tp2& other) {
     return res;
 }
 
+template <Vec _Tp1, Vec _Tp2>
+    requires(_Tp1::length == _Tp2::length)
+inline vec<bool,_Tp1::length> operator>(const _Tp1& self, const _Tp2& other) {
+    vec<bool, _Tp1::length> res;
+    for (size_t i = 0; i < _Tp1::length; i++) {
+        res[i] = self[i] > other[i];
+    }
+    return res;
+}
+template <Vec _Tp1, Vec _Tp2>
+    requires(_Tp1::length == _Tp2::length)
+inline vec<bool,_Tp1::length> operator<(const _Tp1& self, const _Tp2& other) {
+    vec<bool, _Tp1::length> res;
+    for (size_t i = 0; i < _Tp1::length; i++) {
+        res[i] = self[i] < other[i];
+    }
+    return res;
+}
+template <Vec _Tp1, Vec _Tp2>
+    requires(_Tp1::length == _Tp2::length)
+inline vec<bool,_Tp1::length> operator>=(const _Tp1& self, const _Tp2& other) {
+    vec<bool, _Tp1::length> res;
+    for (size_t i = 0; i < _Tp1::length; i++) {
+        res[i] = self[i] >= other[i];
+    }
+    return res;
+}
+template <Vec _Tp1, Vec _Tp2>
+    requires(_Tp1::length == _Tp2::length)
+inline vec<bool,_Tp1::length> operator<=(const _Tp1& self, const _Tp2& other) {
+    vec<bool, _Tp1::length> res;
+    for (size_t i = 0; i < _Tp1::length; i++) {
+        res[i] = self[i] <= other[i];
+    }
+    return res;
+}
+template <Vec _Tp1, Vec _Tp2>
+    requires(_Tp1::length == _Tp2::length)
+inline vec<bool,_Tp1::length> operator==(const _Tp1& self, const _Tp2& other) {
+    vec<bool, _Tp1::length> res;
+    for (size_t i = 0; i < _Tp1::length; i++) {
+        res[i] = self[i] == other[i];
+    }
+    return res;
+}
+template <Vec _Tp1, Vec _Tp2>
+    requires(_Tp1::length == _Tp2::length)
+inline vec<bool,_Tp1::length> operator!=(const _Tp1& self, const _Tp2& other) {
+    vec<bool, _Tp1::length> res;
+    for (size_t i = 0; i < _Tp1::length; i++) {
+        res[i] = self[i]!= other[i];
+    }
+    return res;
+}
+
 template <Vec _Tp, class _ItemType>
 inline auto operator+(const _Tp& self, const _ItemType& other) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} +
@@ -212,7 +299,11 @@ inline auto operator/(const _Tp& self, const _ItemType& other) {
     }
     return res;
 }
+
+
+
 template <Vec _Tp, class _ItemType>
+    requires(VecItem<_Tp, _ItemType>)
 inline auto operator+(const _ItemType& other, const _Tp& v) {
     typename _Tp::template Self<decltype(_ItemType{} +
                                          (typename _Tp::DataType{}))>
@@ -223,6 +314,7 @@ inline auto operator+(const _ItemType& other, const _Tp& v) {
     return res;
 }
 template <Vec _Tp, class _ItemType>
+    requires(VecItem<_Tp, _ItemType>)
 inline auto operator-(const _ItemType& other, const _Tp& self) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} -
                                          _ItemType{})>
@@ -234,6 +326,7 @@ inline auto operator-(const _ItemType& other, const _Tp& self) {
 }
 
 template <Vec _Tp, class _ItemType>
+    requires(VecItem<_Tp, _ItemType>)
 inline auto operator*(const _ItemType& other, const _Tp& v) {
     typename _Tp::template Self<decltype(_ItemType{} *
                                          typename _Tp::DataType{})>
@@ -244,6 +337,7 @@ inline auto operator*(const _ItemType& other, const _Tp& v) {
     return res;
 }
 template <Vec _Tp, class _ItemType>
+    requires(VecItem<_Tp, _ItemType>)
 inline auto operator/(const _ItemType& other, const _Tp& v) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} /
                                          _ItemType{})>
@@ -253,6 +347,7 @@ inline auto operator/(const _ItemType& other, const _Tp& v) {
     }
     return res;
 }
+
 using vec2f = vec2<float>;
 using vec3f = vec3<float>;
 using vec4f = vec4<float>;
@@ -277,5 +372,9 @@ using vec4ll = vec4<long long>;
 using vec2ull = vec2<unsigned long long>;
 using vec3ull = vec3<unsigned long long>;
 using vec4ull = vec4<unsigned long long>;
+using vec2b = vec2<bool>;
+using vec3b = vec3<bool>;
+using vec4b = vec4<bool>;
+
 };  // namespace xcmath
 #endif  // VEC_H

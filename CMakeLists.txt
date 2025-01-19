@@ -6,6 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_subdirectory(src)
-add_executable(test test/test1.cc)
-target_link_libraries(test xcmath)
- 
+option(BUILD_TESTING "Build tests" ON)
+
+if(BUILD_TESTING)
+    add_subdirectory(test)
+endif()
