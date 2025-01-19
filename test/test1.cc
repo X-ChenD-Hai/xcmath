@@ -1,9 +1,5 @@
-#include <cmath>  // IWYU pragma: keep
-#include <iostream>
 
-#include "xcmath.hpp"
-#include "mobject/vec.hpp"
-
+#include <xcmath.hpp>
 using namespace std;
 
 int main() {

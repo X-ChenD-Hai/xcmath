@@ -8,6 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 
 add_subdirectory(src)
-set(xcmath_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}/src)
 add_executable(test test/test1.cc)
-target_include_directories(test PRIVATE ${math_INCLUDE_DIRS})
+target_link_libraries(test xcmath)
+ 
