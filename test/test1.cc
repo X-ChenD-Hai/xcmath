@@ -1,14 +1,14 @@
 #include <cmath>  // IWYU pragma: keep
 #include <iostream>
 
-#include "math.hpp"
+#include "xcmath.hpp"
 #include "mobject/vec.hpp"
 
 using namespace std;
 
 int main() {
     using namespace std;
-    using namespace math;
+    using namespace xcmath;
     auto x = vec3<int>(1, 2, 3);
     auto x2 = vec2<int>(1, 2);
     auto x3 = vec3<int>(x2, 3);
