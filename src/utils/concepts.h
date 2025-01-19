@@ -66,9 +66,24 @@ concept Compare = requires(Tp1 a, Tp2 b) {
     { a == b } -> std::same_as<bool>;
     { a != b } -> std::same_as<bool>;
 };
-
+template <typename _Tp1, typename _RTp = _Tp1>
+concept PrefixPlusPlus = requires(_Tp1 a) {
+    { ++a } -> std::same_as<_RTp>;
+};
+template <typename _Tp1, typename _RTp = _Tp1>
+concept PostfixMinusMinus = requires(_Tp1 a) {
+    { --a } -> std::same_as<_RTp>;
+};
+template <typename _Tp1, typename _RTp = _Tp1>
+concept SurfixPlusPlus = requires(_Tp1 a) {
+    { ++a } -> std::same_as<_RTp>;
+};
+template <typename _Tp1, typename _RTp = _Tp1>
+concept SurfixMinusMinus = requires(_Tp1 a) {
+    { --a } -> std::same_as<_RTp>;
+};
 };  // namespace concepts
 
-}  // namespace math
+}  // namespace xcmath
 
 #endif  // MATHCONCEPTS_H

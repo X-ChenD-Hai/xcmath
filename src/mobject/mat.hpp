@@ -3,8 +3,8 @@
 #define XCMATH_MAT_H
 #include <cstddef>
 
-#include "./vec.hpp"
 #include "../utils/concepts.h"
+#include "./vec.hpp"
 
 namespace xcmath {
 template <typename _Tp, size_t _rows, size_t _cols>
@@ -54,15 +54,42 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
     }
     constexpr static mat<_Tp, _rows, _cols> ones() {
         _Tp one{};
-        return mat<_Tp, _rows, _cols>{++one};
+        return mat<_Tp, _rows, _cols>{
+            vec<vec<_Tp, _cols>, _rows>{vec<_Tp, _cols>{++one}}};
     }
     constexpr static mat<_Tp, _rows, _cols> eye() {
         mat<_Tp, _rows, _cols> res;
-        size_t n = _rows < _cols? _rows : _cols;
+        size_t n = _rows < _cols ? _rows : _cols;
         for (size_t i = 0; i < n; i++) {
             res[i][i] = 1;
         }
         return res;
+    }
+    // determinant
+    _Tp det() const
+        requires(_rows == _cols)
+    {
+        if constexpr (_rows == 1) {
+            return this->data[0][0];
+        } else if constexpr (_rows == 2) {
+            return this->data[0][0] * this->data[1][1] -
+                   this->data[0][1] * this->data[1][0];
+        } else {
+            _Tp res = 0;
+            for (size_t j = 0; j < _rows; j++) {
+                mat<_Tp, _rows - 1, _cols - 1> submat;
+                for (size_t i = 1; i < _rows; i++) {
+                    for (size_t k = 0; k < j; k++) {
+                        submat[i - 1][k] = this->data[i][k];
+                    }
+                    for (size_t k = j + 1; k < _cols; k++) {
+                        submat[i - 1][k - 1] = this->data[i][k];
+                    }
+                }
+                res += ((j % 2 == 0)? 1 : -1) * this->data[0][j] * submat.det();
+            }
+            return res;
+        }
     }
 };
 template <class _Tp>
@@ -176,7 +203,6 @@ using mat4x2ul = mat4x2<unsigned long>;
 using mat4x3ul = mat4x3<unsigned long>;
 using mat4x4ul = mat4x4<unsigned long>;
 
-
 using mat1x2b = mat1x2<bool>;
 using mat1x3b = mat1x3<bool>;
 using mat1x4b = mat1x4<bool>;
@@ -212,6 +238,6 @@ using mat2b = mat2x2b;
 using mat3b = mat3x3b;
 using mat4b = mat4x4b;
 
-}  // namespace math
+}  // namespace xcmath
 
 #endif  // XCMATH_MAT_H

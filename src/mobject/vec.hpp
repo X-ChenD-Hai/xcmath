@@ -151,6 +151,19 @@ class vec2 : public vec<T, 2> {
     const T& y() const { return this->data[1]; }
 };
 
+template <Vec _Tp>
+inline auto operator+(const _Tp& self) {
+    return self;
+}
+template <Vec _Tp>
+inline auto operator-(const _Tp& self) {
+    _Tp res;
+    for (size_t i = 0; i < _Tp::length; i++) {
+        res[i] = -self[i];
+    }
+    return res;
+}
+
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
 inline auto operator+(const _Tp1& self, const _Tp2& other) {
@@ -206,7 +219,7 @@ inline auto operator/(const _Tp1& self, const _Tp2& other) {
 
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool,_Tp1::length> operator>(const _Tp1& self, const _Tp2& other) {
+inline vec<bool, _Tp1::length> operator>(const _Tp1& self, const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] > other[i];
@@ -215,7 +228,7 @@ inline vec<bool,_Tp1::length> operator>(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool,_Tp1::length> operator<(const _Tp1& self, const _Tp2& other) {
+inline vec<bool, _Tp1::length> operator<(const _Tp1& self, const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] < other[i];
@@ -224,7 +237,7 @@ inline vec<bool,_Tp1::length> operator<(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool,_Tp1::length> operator>=(const _Tp1& self, const _Tp2& other) {
+inline vec<bool, _Tp1::length> operator>=(const _Tp1& self, const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] >= other[i];
@@ -233,7 +246,7 @@ inline vec<bool,_Tp1::length> operator>=(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool,_Tp1::length> operator<=(const _Tp1& self, const _Tp2& other) {
+inline vec<bool, _Tp1::length> operator<=(const _Tp1& self, const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] <= other[i];
@@ -242,7 +255,7 @@ inline vec<bool,_Tp1::length> operator<=(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool,_Tp1::length> operator==(const _Tp1& self, const _Tp2& other) {
+inline vec<bool, _Tp1::length> operator==(const _Tp1& self, const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] == other[i];
@@ -251,10 +264,10 @@ inline vec<bool,_Tp1::length> operator==(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool,_Tp1::length> operator!=(const _Tp1& self, const _Tp2& other) {
+inline vec<bool, _Tp1::length> operator!=(const _Tp1& self, const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
-        res[i] = self[i]!= other[i];
+        res[i] = self[i] != other[i];
     }
     return res;
 }
@@ -299,8 +312,6 @@ inline auto operator/(const _Tp& self, const _ItemType& other) {
     }
     return res;
 }
-
-
 
 template <Vec _Tp, class _ItemType>
     requires(VecItem<_Tp, _ItemType>)
@@ -348,6 +359,36 @@ inline auto operator/(const _ItemType& other, const _Tp& v) {
     return res;
 }
 
+template <Vec _Tp>
+_Tp& operator++(const _Tp& v) {
+    for (size_t i = 0; i < _Tp::length; i++) {
+        ++v[i];
+    }
+    return v;
+}
+template <Vec _Tp>
+_Tp& operator--(const _Tp& v) {
+    for (size_t i = 0; i < _Tp::length; i++) {
+        --v[i];
+    }
+    return v;
+}
+
+template <Vec _Tp>
+_Tp operator++(const _Tp& v, int) {
+    _Tp res = v;
+    for (size_t i = 0; i < _Tp::length; i++) {
+        ++res[i];
+    }
+    return res;
+}
+template <Vec _Tp>
+_Tp operator--(const _Tp& v, int) {
+    _Tp res = v;
+    for (size_t i = 0; i < _Tp::length; i++) {
+        --res[i];
+    }
+}
 using vec2f = vec2<float>;
 using vec3f = vec3<float>;
 using vec4f = vec4<float>;
