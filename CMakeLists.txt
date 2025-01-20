@@ -9,5 +9,6 @@ add_subdirectory(src)
 option(BUILD_TESTING "Build tests" ON)
 
 if(BUILD_TESTING)
+    find_package(glm REQUIRED)
     add_subdirectory(test)
 endif()

@@ -11,4 +11,7 @@ target_link_libraries(test_utils xcmath ${GTEST_BOTH_LIBRARIES})
 
 add_test(NAME all COMMAND test_mat&&test_vec&&test_utils)
 
+add_executable(test_graphics graphics.cc)
+target_link_libraries(test_graphics xcmath glm::glm ${GTEST_BOTH_LIBRARIES})
+
 # message(FATAL_ERROR ${CMAKE_CURRENT_BINARY_DIR}/test_xcmath)

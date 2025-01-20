@@ -93,6 +93,21 @@ class vec {
     }
     constexpr vec() {}
     // computional methods
+    template <size_t i = 0, size_t j = _length>
+        requires(i < j && j <= _length)
+    auto slice() const {
+        vec<ItemType, j - i> res;
+        for (size_t k = i; k < j; k++) {
+            res.data[k - i] = data[k];
+        }
+        return res;
+    }
+    template <size_t j>
+        requires(j > 0 && j <= _length)
+    auto slice() {
+        return slice<0, j>();
+    }
+
     vec<_Tp, _length> cross(const vec<_Tp, _length>& other) const {
         vec<_Tp, _length> res;
         res[0] = data[1] * other[2] - data[2] * other[1];
@@ -443,6 +458,7 @@ _Tp operator--(const _Tp& v, int) {
         --res[i];
     }
 }
+
 using vec2f = vec2<float>;
 using vec3f = vec3<float>;
 using vec4f = vec4<float>;
