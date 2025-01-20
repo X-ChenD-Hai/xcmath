@@ -181,3 +181,38 @@ TEST(Method, angle) {
     float result = v1.angle(v2);
     EXPECT_FLOAT_EQ(result, 1.5707963267948966);
 }
+
+TEST(Method, any) {
+    xcmath::vec3b v1{1, 0, 1};
+    bool result = v1.any();
+    EXPECT_EQ(result, true);
+
+    xcmath::vec3b v2{0, 0, 0};
+    result = v2.any();
+    EXPECT_EQ(result, false);
+
+    xcmath::vec<xcmath::vec3b, 3> v3{v1, v2, v1};
+    result = v3.any();
+    EXPECT_EQ(result, true);
+
+    xcmath::vec<xcmath::vec3b, 3> v4{v2, v2, v2};
+    result = v4.any();
+    EXPECT_EQ(result, false);
+}
+TEST(Method, every) {
+    xcmath::vec3b v1{1, 1, 1};
+    bool result = v1.every();
+    EXPECT_EQ(result, true);
+
+    xcmath::vec3b v2{0, 1, 1};
+    result = v2.every();
+    EXPECT_EQ(result, false);
+
+    xcmath::vec<xcmath::vec3b, 3> v3{v1, v2, v1};
+    result = v3.every();
+    EXPECT_EQ(result, false);
+
+    xcmath::vec<xcmath::vec3b, 3> v4{v1, v1, v1};
+    result = v4.every();
+    EXPECT_EQ(result, true);
+}

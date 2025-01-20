@@ -133,6 +133,42 @@ class vec {
         _Tp cos_theta = dot(other) / (mod() * other.mod());
         return acos(cos_theta);
     }
+    bool any() const
+        requires(std::is_convertible_v<DataType, bool>)
+    {
+        if constexpr (std::is_convertible_v<ItemType, bool>) {
+            for (size_t i = 0; i < _length; i++)
+                if (data[i]) {
+                    return true;
+                }
+            return false;
+        } else if constexpr (Vec<ItemType>) {
+            for (size_t i = 0; i < _length; i++) {
+                if (data[i].any()) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+    bool every() const
+        requires(std::is_convertible_v<DataType, bool>)
+    {
+        if constexpr (std::is_convertible_v<ItemType, bool>) {
+            for (size_t i = 0; i < _length; i++)
+                if (!data[i]) {
+                    return false;
+                }
+            return true;
+        } else if constexpr (Vec<ItemType>) {
+            for (size_t i = 0; i < _length; i++) {
+                if (!data[i].every()) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    }
 };
 
 template <typename T>
@@ -434,6 +470,5 @@ using vec4ull = vec4<unsigned long long>;
 using vec2b = vec2<bool>;
 using vec3b = vec3<bool>;
 using vec4b = vec4<bool>;
-
 };  // namespace xcmath
 #endif  // VEC_H
