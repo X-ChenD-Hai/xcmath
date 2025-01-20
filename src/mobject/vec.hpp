@@ -109,11 +109,29 @@ class vec {
     }
     vec<_Tp, _length> normalize() const {
         vec<_Tp, _length> res;
-        _Tp len = length;
+        auto disten = distance({});
         for (size_t i = 0; i < _length; i++) {
-            res[i] = data[i] / len;
+            res[i] = data[i] / disten;
         }
         return res;
+    }
+    _Tp distance(const vec<_Tp, _length>& other) const {
+        _Tp res = _Tp{};
+        for (size_t i = 0; i < _length; i++) {
+            res += (data[i] - other[i]) * (data[i] - other[i]);
+        }
+        return sqrt(res);
+    }
+    _Tp mod() const {
+        _Tp res = _Tp{};
+        for (size_t i = 0; i < _length; i++) {
+            res += data[i] * data[i];
+        }
+        return sqrt(res);
+    }
+    _Tp angle(const vec<_Tp, _length>& other) const {
+        _Tp cos_theta = dot(other) / (mod() * other.mod());
+        return acos(cos_theta);
     }
 };
 

@@ -2,7 +2,23 @@
 
 #include <gtest/gtest.h>
 
+#include <utils/show.hpp>
 #include <xcmath.hpp>
+// Property tests
+TEST(Property, DataType) {
+    xcmath::vec<float, 3> v1{1, 2, 3};
+    xcmath::vec<xcmath::vec<float, 3>, 3> v2{xcmath::vec<float, 3>{1},
+                                             xcmath::vec<float, 3>{2},
+                                             xcmath::vec<float, 3>{3}};
+    EXPECT_STREQ(v1.datatype, "float");
+    EXPECT_STREQ(v2.itemtype, "xcmath::vec<float, 3>");
+}
+
+TEST(Property, length) {
+    xcmath::vec3f v1{1, 2, 3};
+    float result = v1.length;
+    EXPECT_EQ(result, 3);
+}
 
 // Operator tests
 TEST(Operator, eq) {
@@ -137,4 +153,31 @@ TEST(Method, cross) {
     xcmath::vec3f expected{-3, 6, -3};
 
     EXPECT_FLOAT_EQ(result[0], expected[0]);
+}
+TEST(Method, mod) {
+    xcmath::vec3f v1{1, 2, 3};
+    float result = v1.mod();
+    EXPECT_FLOAT_EQ(result, 3.7416573867739413);
+}
+TEST(Method, distance) {
+    xcmath::vec3f v1{1, 2, 3};
+    xcmath::vec3f v2{4, 5, 6};
+    float result = v1.distance(v2);
+    EXPECT_FLOAT_EQ(result, 5.196152422706632);
+}
+TEST(Method, normalize) {
+    xcmath::vec3f v1{1, 2, 3};
+    xcmath::vec3f result = v1.normalize();
+    xcmath::vec3f expected{0.2672612419124244, 0.5345224838248488,
+                           0.8017837257372732};
+
+    for (int i = 0; i < 3; i++) {
+        EXPECT_FLOAT_EQ(result[i], expected[i]);
+    }
+}
+TEST(Method, angle) {
+    xcmath::vec3f v1{1, 0, 0};
+    xcmath::vec3f v2{0, 1, 0};
+    float result = v1.angle(v2);
+    EXPECT_FLOAT_EQ(result, 1.5707963267948966);
 }
