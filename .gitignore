@@ -1,11 +1,11 @@
 /*
-!/third_party/
 !/.gitignore
-!/.gitmodules
-!/src/
-!/test/
+!/src
+!/tests
 !/docs
 !/CMakeLists.txt
 !/README.md
 !.clang-format
 !resources/
+!vcpkg.json
+!CMakePresets.json
