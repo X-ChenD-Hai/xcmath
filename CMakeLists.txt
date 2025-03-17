@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.15)
 project(math LANGUAGES CXX C)
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
 
@@ -10,7 +10,8 @@ add_subdirectory(src)
 option(BUILD_TESTING "Build tests" ON)
 
 if(BUILD_TESTING)
-    add_subdirectory(test)
+    enable_testing()
+    add_subdirectory(tests)
 endif()
 
 install(TARGETS xcmath EXPORT xcmath)

@@ -1,4 +1,4 @@
-enable_testing()
+find_package(glm CONFIG REQUIRED)
 find_package(GTest REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS})
 
@@ -9,9 +9,12 @@ target_link_libraries(test_mat xcmath ${GTEST_BOTH_LIBRARIES})
 add_executable(test_utils utils.cc)
 target_link_libraries(test_utils xcmath ${GTEST_BOTH_LIBRARIES})
 
-add_test(NAME all COMMAND test_mat&&test_vec&&test_utils)
 
 add_executable(test_graphics graphics.cc)
-target_link_libraries(test_graphics xcmath glm::glm ${GTEST_BOTH_LIBRARIES})
+target_link_libraries(test_graphics PRIVATE xcmath glm::glm ${GTEST_BOTH_LIBRARIES})
 
 # message(FATAL_ERROR ${CMAKE_CURRENT_BINARY_DIR}/test_xcmath)
+add_test(NAME mat COMMAND test_mat)
+add_test(NAME vec COMMAND test_vec)
+add_test(NAME utils COMMAND test_utils)
+add_test(NAME graphics COMMAND test_graphics)
