@@ -3,7 +3,9 @@
 #define SHOW_H
 #include <iostream>
 
+#include "../mobject/declaration.hpp"
 #include "./concepts.h"  // IWYU pragma: keep
+
 
 namespace xcmath {
 namespace concepts {
@@ -13,12 +15,11 @@ concept OstreamOverwrite = requires(T a) {
 };
 }  // namespace concepts
 
-#ifdef COMPLEX_H
 template <typename T>
     requires concepts::OstreamOverwrite<T> || requires(T x) {
         { x.to_string() } -> std::same_as<std::string>;
     }
-std::ostream& operator<<(std::ostream& os, const Complex<T>& c) {
+std::ostream& operator<<(std::ostream& os, const complex<T>& c) {
     if constexpr (std::is_arithmetic_v<T>)
         os << c.real << (c.imag >= 0 ? " + " : " - ") << "j" << abs(c.imag);
     else if constexpr (concepts::OstreamOverwrite<T>)
@@ -27,8 +28,6 @@ std::ostream& operator<<(std::ostream& os, const Complex<T>& c) {
         os << c.real.to_string() << " + j(" << c.imag.to_string() << ")";
     return os;
 }
-#endif  // COMPLEX_H
-#ifdef MAT_H
 template <typename T, size_t _rows, size_t _cols>
     requires concepts::OstreamOverwrite<T> || requires(T x) {
         { x.to_string() } -> std::same_as<std::string>;
@@ -54,8 +53,6 @@ std::ostream& operator<<(std::ostream& os, const mat<T, _rows, _cols>& m) {
     };
     return os;
 }
-#endif  // MAT_H
-#ifdef VEC_H
 template <typename T, size_t _size>
     requires concepts::OstreamOverwrite<T> || requires(T x) {
         { x.to_string() } -> std::same_as<std::string>;
@@ -77,9 +74,7 @@ std::ostream& operator<<(std::ostream& os, const vec<T, _size>& v) {
     }
     return os;
 }
-#endif  // VEC_H
 
-#ifdef QUATERNION_H
 template <typename T>
     requires concepts::OstreamOverwrite<T> || requires(T x) {
         { x.to_string() } -> std::same_as<std::string>;
@@ -95,7 +90,6 @@ std::ostream& operator<<(std::ostream& os, const quaternion<T>& q) {
     }
     return os;
 }
-#endif  // QUATERNION_H
 
-}  // namespace math
+}  // namespace xcmath
 #endif  // SHOW_H

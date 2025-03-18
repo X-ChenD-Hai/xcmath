@@ -1,13 +1,16 @@
 // vec.hpp
 #ifndef VEC_H
 #define VEC_H
+#ifdef _MSVC_VER
 #include <vcruntime_typeinfo.h>
-
+#endif
+#include <cmath>
 #include <concepts>
 #include <cstddef>
 #include <type_traits>
 
 #include "../utils/compiling.hpp"
+#include "./declaration.hpp"
 
 namespace xcmath {
 template <class T>
@@ -22,7 +25,7 @@ concept Vec = requires(T a) {
 };
 template <typename _Vec, class _Item>
 concept VecItem = requires {
-    Vec<_Vec>;
+    requires(Vec<_Vec>);
     requires std::convertible_to<typename _Vec::ItemType, _Item> ||
                  std::convertible_to<_Item, typename _Vec::ItemType>;
 };
@@ -48,13 +51,13 @@ class vec {
     constexpr static auto length = _length;
     constexpr const _Tp* begin() const { return data; }
     constexpr const _Tp* end() const { return data + length; }
-    _Tp& operator[](size_t index) { return data[index]; }
-    const _Tp& operator[](size_t index) const { return data[index]; }
+    constexpr _Tp& operator[](size_t index) { return data[index]; }
+    constexpr const _Tp& operator[](size_t index) const { return data[index]; }
 
     template <Vec _NTp>
         requires(std::convertible_to<ItemType, typename _NTp::ItemType> &&
                  length == _NTp::length)
-    operator _NTp() const {
+    constexpr operator _NTp() const {
         _NTp res;
         for (size_t i = 0; i < _length; i++) {
             res[i] = static_cast<_NTp::ItemType>(data[i]);
@@ -92,10 +95,35 @@ class vec {
         }
     }
     constexpr vec() {}
+
+    constexpr vec<_Tp, _length>& operator=(const vec<_Tp, _length>& o) {
+        for (size_t i = 0; i < _length; i++) {
+            data[i] = o[i];
+        }
+        return *this;
+    }
+    constexpr vec<_Tp, _length>& operator=(vec<_Tp, _length>&& o) {
+        for (size_t i = 0; i < _length; i++) {
+            data[i] = o[i];
+        }
+        return *this;
+    }
+    constexpr vec(vec<_Tp, _length>&& o) {
+        for (size_t i = 0; i < _length; i++) {
+            data[i] = o[i];
+        }
+    }
+    constexpr vec<_Tp, _length>& operator=(vec<_Tp, _length>& o) {
+        for (size_t i = 0; i < _length; i++) {
+            data[i] = o[i];
+        }
+        return *this;
+    }
+
     // computional methods
     template <size_t i = 0, size_t j = _length>
         requires(i < j && j <= _length)
-    auto slice() const {
+    constexpr auto slice() const {
         vec<ItemType, j - i> res;
         for (size_t k = i; k < j; k++) {
             res.data[k - i] = data[k];
@@ -104,25 +132,25 @@ class vec {
     }
     template <size_t j>
         requires(j > 0 && j <= _length)
-    auto slice() {
+    constexpr auto slice() {
         return slice<0, j>();
     }
 
-    vec<_Tp, _length> cross(const vec<_Tp, _length>& other) const {
+    constexpr vec<_Tp, _length> cross(const vec<_Tp, _length>& other) const {
         vec<_Tp, _length> res;
         res[0] = data[1] * other[2] - data[2] * other[1];
         res[1] = data[2] * other[0] - data[0] * other[2];
         res[2] = data[0] * other[1] - data[1] * other[0];
         return res;
     }
-    _Tp dot(const vec<_Tp, _length>& other) const {
+    constexpr _Tp dot(const vec<_Tp, _length>& other) const {
         _Tp res = _Tp{};
         for (size_t i = 0; i < _length; i++) {
             res += data[i] * other[i];
         }
         return res;
     }
-    vec<_Tp, _length> normalize() const {
+    constexpr vec<_Tp, _length> normalize() const {
         vec<_Tp, _length> res;
         auto disten = distance({});
         for (size_t i = 0; i < _length; i++) {
@@ -130,25 +158,25 @@ class vec {
         }
         return res;
     }
-    _Tp distance(const vec<_Tp, _length>& other) const {
+    constexpr _Tp distance(const vec<_Tp, _length>& other) const {
         _Tp res = _Tp{};
         for (size_t i = 0; i < _length; i++) {
             res += (data[i] - other[i]) * (data[i] - other[i]);
         }
-        return sqrt(res);
+        return std::sqrt(res);
     }
-    _Tp mod() const {
+    constexpr _Tp mod() const {
         _Tp res = _Tp{};
         for (size_t i = 0; i < _length; i++) {
             res += data[i] * data[i];
         }
         return sqrt(res);
     }
-    _Tp angle(const vec<_Tp, _length>& other) const {
+    constexpr _Tp angle(const vec<_Tp, _length>& other) const {
         _Tp cos_theta = dot(other) / (mod() * other.mod());
-        return acos(cos_theta);
+        return std::acos(cos_theta);
     }
-    bool any() const
+    constexpr bool any() const
         requires(std::is_convertible_v<DataType, bool>)
     {
         if constexpr (std::is_convertible_v<ItemType, bool>) {
@@ -166,7 +194,7 @@ class vec {
             return false;
         }
     }
-    bool every() const
+    constexpr bool every() const
         requires(std::is_convertible_v<DataType, bool>)
     {
         if constexpr (std::is_convertible_v<ItemType, bool>) {
@@ -190,34 +218,34 @@ template <typename T>
 class vec4 : public vec<T, 4> {
    public:
     using vec<T, 4>::vec;
-    T& w() { return this->data[0]; }
-    T& x() { return this->data[1]; }
-    T& y() { return this->data[2]; }
-    T& z() { return this->data[3]; }
-    const T& w() const { return this->data[0]; }
-    const T& x() const { return this->data[1]; }
-    const T& y() const { return this->data[2]; }
-    const T& z() const { return this->data[3]; }
+    constexpr T& w() { return this->data[0]; }
+    constexpr T& x() { return this->data[1]; }
+    constexpr T& y() { return this->data[2]; }
+    constexpr T& z() { return this->data[3]; }
+    constexpr const T& w() const { return this->data[0]; }
+    constexpr const T& x() const { return this->data[1]; }
+    constexpr const T& y() const { return this->data[2]; }
+    constexpr const T& z() const { return this->data[3]; }
 };
 template <typename T>
 class vec3 : public vec<T, 3> {
    public:
     using vec<T, 3>::vec;
-    T& x() { return this->data[0]; }
-    T& y() { return this->data[1]; }
-    T& z() { return this->data[2]; }
-    const T& x() const { return this->data[0]; }
-    const T& y() const { return this->data[1]; }
-    const T& z() const { return this->data[2]; }
+    constexpr T& x() { return this->data[0]; }
+    constexpr T& y() { return this->data[1]; }
+    constexpr T& z() { return this->data[2]; }
+    constexpr const T& x() const { return this->data[0]; }
+    constexpr const T& y() const { return this->data[1]; }
+    constexpr const T& z() const { return this->data[2]; }
 };
 template <typename T>
 class vec2 : public vec<T, 2> {
    public:
     using vec<T, 2>::vec;
-    T& x() { return this->data[0]; }
-    T& y() { return this->data[1]; }
-    const T& x() const { return this->data[0]; }
-    const T& y() const { return this->data[1]; }
+    constexpr T& x() { return this->data[0]; }
+    constexpr T& y() { return this->data[1]; }
+    constexpr const T& x() const { return this->data[0]; }
+    constexpr const T& y() const { return this->data[1]; }
 };
 
 template <Vec _Tp>
@@ -225,7 +253,7 @@ inline auto operator+(const _Tp& self) {
     return self;
 }
 template <Vec _Tp>
-inline auto operator-(const _Tp& self) {
+inline constexpr auto operator-(const _Tp& self) {
     _Tp res;
     for (size_t i = 0; i < _Tp::length; i++) {
         res[i] = -self[i];
@@ -235,7 +263,7 @@ inline auto operator-(const _Tp& self) {
 
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline auto operator+(const _Tp1& self, const _Tp2& other) {
+inline constexpr auto operator+(const _Tp1& self, const _Tp2& other) {
     typename _Tp1::template Self<decltype(typename _Tp1::DataType{} +
                                           typename _Tp2::DataType{})>
         res;
@@ -245,7 +273,7 @@ inline auto operator+(const _Tp1& self, const _Tp2& other) {
     return res;
 }
 template <Vec _Tp, class _RTp>
-inline auto operator-(const _Tp& self) {
+inline constexpr auto operator-(const _Tp& self) {
     typename _Tp::template Self<decltype(-typename _Tp::DataType{})> res;
     for (size_t i = 0; i < _Tp::length; i++) {
         res[i] = -self[i];
@@ -254,7 +282,7 @@ inline auto operator-(const _Tp& self) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline auto operator-(const _Tp1& self, const _Tp2& other) {
+inline constexpr auto operator-(const _Tp1& self, const _Tp2& other) {
     typename _Tp1::template Self<decltype(typename _Tp1::DataType{} -
                                           typename _Tp2::DataType{})>
         res;
@@ -265,7 +293,7 @@ inline auto operator-(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline auto operator*(const _Tp1& self, const _Tp2& other) {
+inline constexpr auto operator*(const _Tp1& self, const _Tp2& other) {
     typename _Tp1::template Self<decltype(typename _Tp1::DataType{} *
                                           typename _Tp2::DataType{})>
         res;
@@ -276,7 +304,7 @@ inline auto operator*(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline auto operator/(const _Tp1& self, const _Tp2& other) {
+inline constexpr auto operator/(const _Tp1& self, const _Tp2& other) {
     typename _Tp1::template Self<decltype(typename _Tp1::DataType{} /
                                           typename _Tp2::DataType{})>
         res;
@@ -288,7 +316,8 @@ inline auto operator/(const _Tp1& self, const _Tp2& other) {
 
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool, _Tp1::length> operator>(const _Tp1& self, const _Tp2& other) {
+inline constexpr vec<bool, _Tp1::length> operator>(const _Tp1& self,
+                                                   const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] > other[i];
@@ -297,7 +326,8 @@ inline vec<bool, _Tp1::length> operator>(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool, _Tp1::length> operator<(const _Tp1& self, const _Tp2& other) {
+inline constexpr vec<bool, _Tp1::length> operator<(const _Tp1& self,
+                                                   const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] < other[i];
@@ -306,7 +336,8 @@ inline vec<bool, _Tp1::length> operator<(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool, _Tp1::length> operator>=(const _Tp1& self, const _Tp2& other) {
+inline constexpr vec<bool, _Tp1::length> operator>=(const _Tp1& self,
+                                                    const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] >= other[i];
@@ -315,7 +346,8 @@ inline vec<bool, _Tp1::length> operator>=(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool, _Tp1::length> operator<=(const _Tp1& self, const _Tp2& other) {
+inline constexpr vec<bool, _Tp1::length> operator<=(const _Tp1& self,
+                                                    const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] <= other[i];
@@ -324,7 +356,8 @@ inline vec<bool, _Tp1::length> operator<=(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool, _Tp1::length> operator==(const _Tp1& self, const _Tp2& other) {
+inline constexpr vec<bool, _Tp1::length> operator==(const _Tp1& self,
+                                                    const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] == other[i];
@@ -333,7 +366,8 @@ inline vec<bool, _Tp1::length> operator==(const _Tp1& self, const _Tp2& other) {
 }
 template <Vec _Tp1, Vec _Tp2>
     requires(_Tp1::length == _Tp2::length)
-inline vec<bool, _Tp1::length> operator!=(const _Tp1& self, const _Tp2& other) {
+inline constexpr vec<bool, _Tp1::length> operator!=(const _Tp1& self,
+                                                    const _Tp2& other) {
     vec<bool, _Tp1::length> res;
     for (size_t i = 0; i < _Tp1::length; i++) {
         res[i] = self[i] != other[i];
@@ -342,7 +376,7 @@ inline vec<bool, _Tp1::length> operator!=(const _Tp1& self, const _Tp2& other) {
 }
 
 template <Vec _Tp, class _ItemType>
-inline auto operator+(const _Tp& self, const _ItemType& other) {
+inline constexpr auto operator+(const _Tp& self, const _ItemType& other) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} +
                                          _ItemType{})>
         res;
@@ -352,7 +386,7 @@ inline auto operator+(const _Tp& self, const _ItemType& other) {
     return res;
 }
 template <Vec _Tp, class _ItemType>
-inline auto operator-(const _Tp& self, const _ItemType& other) {
+inline constexpr auto operator-(const _Tp& self, const _ItemType& other) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} -
                                          _ItemType{})>
         res;
@@ -362,7 +396,7 @@ inline auto operator-(const _Tp& self, const _ItemType& other) {
     return res;
 }
 template <Vec _Tp, class _ItemType>
-inline auto operator*(const _Tp& self, const _ItemType& other) {
+inline constexpr auto operator*(const _Tp& self, const _ItemType& other) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} *
                                          _ItemType{})>
         res;
@@ -372,7 +406,7 @@ inline auto operator*(const _Tp& self, const _ItemType& other) {
     return res;
 }
 template <Vec _Tp, class _ItemType>
-inline auto operator/(const _Tp& self, const _ItemType& other) {
+inline constexpr auto operator/(const _Tp& self, const _ItemType& other) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} /
                                          _ItemType{})>
         res;
@@ -384,7 +418,7 @@ inline auto operator/(const _Tp& self, const _ItemType& other) {
 
 template <Vec _Tp, class _ItemType>
     requires(VecItem<_Tp, _ItemType>)
-inline auto operator+(const _ItemType& other, const _Tp& v) {
+inline constexpr auto operator+(const _ItemType& other, const _Tp& v) {
     typename _Tp::template Self<decltype(_ItemType{} +
                                          (typename _Tp::DataType{}))>
         res;
@@ -395,7 +429,7 @@ inline auto operator+(const _ItemType& other, const _Tp& v) {
 }
 template <Vec _Tp, class _ItemType>
     requires(VecItem<_Tp, _ItemType>)
-inline auto operator-(const _ItemType& other, const _Tp& self) {
+inline constexpr auto operator-(const _ItemType& other, const _Tp& self) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} -
                                          _ItemType{})>
         res;
@@ -418,7 +452,7 @@ inline auto operator*(const _ItemType& other, const _Tp& v) {
 }
 template <Vec _Tp, class _ItemType>
     requires(VecItem<_Tp, _ItemType>)
-inline auto operator/(const _ItemType& other, const _Tp& v) {
+inline constexpr auto operator/(const _ItemType& other, const _Tp& v) {
     typename _Tp::template Self<decltype(typename _Tp::DataType{} /
                                          _ItemType{})>
         res;
@@ -429,14 +463,14 @@ inline auto operator/(const _ItemType& other, const _Tp& v) {
 }
 
 template <Vec _Tp>
-_Tp& operator++(const _Tp& v) {
+constexpr _Tp& operator++(const _Tp& v) {
     for (size_t i = 0; i < _Tp::length; i++) {
         ++v[i];
     }
     return v;
 }
 template <Vec _Tp>
-_Tp& operator--(const _Tp& v) {
+constexpr _Tp& operator--(const _Tp& v) {
     for (size_t i = 0; i < _Tp::length; i++) {
         --v[i];
     }
@@ -444,7 +478,7 @@ _Tp& operator--(const _Tp& v) {
 }
 
 template <Vec _Tp>
-_Tp operator++(const _Tp& v, int) {
+constexpr _Tp operator++(const _Tp& v, int) {
     _Tp res = v;
     for (size_t i = 0; i < _Tp::length; i++) {
         ++res[i];
@@ -452,12 +486,30 @@ _Tp operator++(const _Tp& v, int) {
     return res;
 }
 template <Vec _Tp>
-_Tp operator--(const _Tp& v, int) {
+constexpr _Tp operator--(const _Tp& v, int) {
     _Tp res = v;
     for (size_t i = 0; i < _Tp::length; i++) {
         --res[i];
     }
 }
+template <size_t _len>
+using vecf = vec<float, _len>;
+template <size_t _len>
+using vecd = vec<double, _len>;
+template <size_t _len>
+using veci = vec<int, _len>;
+template <size_t _len>
+using vecui = vec<unsigned int, _len>;
+template <size_t _len>
+using vecl = vec<long, _len>;
+template <size_t _len>
+using vecul = vec<unsigned long, _len>;
+template <size_t _len>
+using vecll = vec<long long, _len>;
+template <size_t _len>
+using vecull = vec<unsigned long long, _len>;
+template <size_t _len>
+using vecb = vec<bool, _len>;
 
 using vec2f = vec2<float>;
 using vec3f = vec3<float>;

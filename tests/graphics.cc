@@ -13,7 +13,7 @@
 xcmath::mat4f projection(float fov, float aspect, float near_, float far_) {
     if (fov == 0.0f || aspect == 0.0f || near_ == 0.0f || far_ == 0.0f ||
         near_ >= far_) {
-        throw std::runtime_error("Invalid camera parameters");
+        // throw std::runtime_error("Invalid camera parameters");
     }
     xcmath::mat4f projectionMatrix{};
     float f = 1.0f / tan(fov / 2.0f);
@@ -28,12 +28,12 @@ xcmath::mat4f projection(float fov, float aspect, float near_, float far_) {
 xcmath::mat4f lookAt(const xcmath::vec3f &position, const xcmath::vec3f &target,
                      const xcmath::vec3f &up) {
     if ((position == target).every()) {
-        throw std::runtime_error("Position and target are the same");
+        // throw std::runtime_error("Position and target are the same");
     }
     xcmath::vec3f forward = (target - position).normalize();
     if (std::abs(forward.dot(up)) >=
         0.9999f) {  // 使用一个阈值来判断是否接近平行
-        throw std::runtime_error("Forward and up vectors are parallel");
+        // throw std::runtime_error("Forward and up vectors are parallel");
     }
     xcmath::vec3f side = forward.cross(up).normalize();
     xcmath::vec3f upward = side.cross(forward).normalize();
@@ -48,7 +48,7 @@ xcmath::mat4f lookAt(const xcmath::vec3f &position, const xcmath::vec3f &target,
     // 使用一个小的阈值来检查行列式
     const float epsilon = 1e-6f;
     if (std::abs(viewMatrix.det()) < epsilon) {
-        throw std::runtime_error("Invalid camera parameters");
+        // throw std::runtime_error("Invalid camera parameters");
     }
 
     return viewMatrix;

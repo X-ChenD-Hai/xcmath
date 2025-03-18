@@ -8,6 +8,8 @@ add_executable(test_mat mat.cc)
 target_link_libraries(test_mat xcmath ${GTEST_BOTH_LIBRARIES})
 add_executable(test_utils utils.cc)
 target_link_libraries(test_utils xcmath ${GTEST_BOTH_LIBRARIES})
+add_executable(test_function function.cc)
+target_link_libraries(test_function xcmath ${GTEST_BOTH_LIBRARIES})
 
 
 add_executable(test_graphics graphics.cc)
@@ -18,3 +20,4 @@ add_test(NAME mat COMMAND test_mat)
 add_test(NAME vec COMMAND test_vec)
 add_test(NAME utils COMMAND test_utils)
 add_test(NAME graphics COMMAND test_graphics)
+add_test(NAME function COMMAND test_function)

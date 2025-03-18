@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(math LANGUAGES CXX C)
 set(CMAKE_EXPORT_COMPILE_COMMANDS True)
-
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)

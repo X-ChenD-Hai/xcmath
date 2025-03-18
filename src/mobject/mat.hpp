@@ -7,7 +7,7 @@
 #include "./vec.hpp"
 
 namespace xcmath {
-template <typename _Tp, size_t _rows, size_t _cols>
+template <typename _Tp, size_t _rows, size_t _cols = _rows>
 class mat : public vec<vec<_Tp, _cols>, _rows> {
    public:
     static constexpr vec2<size_t> shape{_rows, _cols};
@@ -19,7 +19,8 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
     template <class _T>
     using Self = mat<_T, _rows, _cols>;
     template <size_t _ncols>
-    mat<_Tp, _rows, _ncols> operator^(const mat<_Tp, _cols, _ncols>& other) {
+    constexpr mat<_Tp, _rows, _ncols> operator^(
+        const mat<_Tp, _cols, _ncols>& other) {
         mat<_Tp, _rows, _ncols> res;
         for (size_t i = 0; i < _rows; i++) {
             for (size_t j = 0; j < _ncols; j++) {
@@ -34,7 +35,7 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         requires(_VTp::length == _rows) &&
                 concepts::Add<typename _VTp::DataType> &&
                 concepts::Muitiply<typename _VTp::DataType, _Tp>
-    _VTp operator^(const _VTp& other) {
+    constexpr _VTp operator^(const _VTp& other) {
         _VTp res;
         for (size_t i = 0; i < _rows; i++) {
             for (size_t j = 0; j < _cols; j++) {
@@ -43,7 +44,7 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         }
         return res;
     }
-    mat<_Tp, _cols, _rows> T() const {
+    constexpr mat<_Tp, _cols, _rows> T() const {
         mat<_Tp, _cols, _rows> res;
         for (size_t i = 0; i < _rows; i++) {
             for (size_t j = 0; j < _cols; j++) {
@@ -66,7 +67,7 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         return res;
     }
     // determinant
-    _Tp det() const
+    constexpr _Tp det() const
         requires(_rows == _cols)
     {
         if constexpr (_rows == 1) {
@@ -86,12 +87,14 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
                         submat[i - 1][k - 1] = this->data[i][k];
                     }
                 }
-                res += ((j % 2 == 0)? 1 : -1) * this->data[0][j] * submat.det();
+                res +=
+                    ((j % 2 == 0) ? 1 : -1) * this->data[0][j] * submat.det();
             }
             return res;
         }
     }
 };
+
 template <class _Tp>
 using mat1x2 = mat<_Tp, 1, 2>;
 template <class _Tp>
@@ -122,6 +125,10 @@ template <class _Tp>
 using mat4x3 = mat<_Tp, 4, 3>;
 template <class _Tp>
 using mat4x4 = mat<_Tp, 4, 4>;
+template <class _Tp>
+using mat3 = mat3x3<_Tp>;
+template <class _Tp>
+using mat4 = mat4x4<_Tp>;
 
 using mat1x2f = mat1x2<float>;
 using mat1x3f = mat1x3<float>;

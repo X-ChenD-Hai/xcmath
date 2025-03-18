@@ -90,3 +90,6 @@ TEST(Method, det__SingularMatrix) {
     EXPECT_FLOAT_EQ(singular.det(), 0.0f);
 }
 
+TEST(Method, nat_muti_vec){
+
+}
