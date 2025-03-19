@@ -1,42 +1,134 @@
-// quaternion.hpp
+/**
+ * @file quaternion.hpp
+ * @brief Header file for quaternion class template and related utilities
+ * @author XCDH
+ * @version 1.0
+ * @date 2023-10-05
+ */
+
 #ifndef XCMATH_QUATERNION_HPP
 #define XCMATH_QUATERNION_HPP
-#include <type_traits>
+
 #include <cmath>
+#include <type_traits>
+
 #include "./vec.hpp"
 
 namespace xcmath {
 template <typename _Tp, size_t _rows, size_t _cols>
 class mat;
-template <typename T>
-class quaternion : public vec<T, 4> {
+
+/**
+ * @brief Quaternion class template
+ *
+ * @tparam T Type of elements in the quaternion
+ */
+template <typename _Tp>
+class quaternion : public vec<_Tp, 4> {
    public:
-    using vec<T, 4>::vec;
-    using vec<T, 4>::operator[];
-    using vec<T, 4>::operator=;
+    /**
+     * @brief Type of elements in the vector
+     */
+    using ItemType = _Tp;
+
+    /**
+     * @brief Type of data stored in the vector
+     */
+    using DataType = decltype(get_item_zero<ItemType>());
+
+    /**
+     * @brief Alias for the vector type with a different element type
+     *
+     * @tparam _T Type of elements for the new vector
+     */
     template <class _T>
     using Self = quaternion<_T>;
 
-    template <class _Tp>
-        requires std::is_convertible_v<_Tp, T>
-    constexpr quaternion(const _Tp &r) {
-        this->data[0] = r;
-        this->data[1] = 0;
-        this->data[2] = 0;
-        this->data[3] = 0;
+    /**
+     * @brief Name of the data type
+     */
+    constexpr static auto datatype = get_type_name<DataType>();
+
+    /**
+     * @brief Name of the item type
+     */
+    constexpr static auto itemtype = get_type_name<ItemType>();
+
+    /**
+     * @brief Length of the vector
+     */
+    constexpr static auto length = 4;
+
+    quaternion() = default;
+    quaternion(_Tp r, _Tp i, _Tp j, _Tp k) {
+        this->r() = r;
+        this->j() = j;
+        this->i() = i;
+        this->k() = k;
     }
-    template <class _Tp>
+
+    /**
+     * @brief Inherit operator[] from base class
+     */
+    using vec<_Tp, 4>::operator[];
+
+    /**
+     * @brief Inherit assignment operator from base class
+     */
+    using vec<_Tp, 4>::operator=;
+
+    template <typename _OTp>
+        requires(std::is_convertible_v<ItemType, _OTp>)
+    constexpr inline operator Self<_OTp>() const {
+        Self<_OTp> ret;
+        ret.r() = (_OTp)r();
+        ret.i() = (_OTp)i();
+        ret.j() = (_OTp)j();
+        ret.k() = (_OTp)k();
+        return ret;
+    }
+
+    /**
+     * @brief Construct a quaternion from a scalar
+     *
+     * @tparam _Tp Type of the scalar
+     * @param r Scalar value
+     */
+    template <class _T>
+        requires std::is_convertible_v<_T, _Tp>
+    constexpr quaternion(const _T &r) {
+        this->r() = r;
+        this->i() = 0;
+        this->j() = 0;
+        this->k() = 0;
+    }
+
+    /**
+     * @brief Construct a quaternion from an axis and angle
+     *
+     * @tparam _Tp Type of elements in the axis vector
+     * @param axis Axis of rotation
+     * @param angle Angle of rotation
+     */
+    template <class _T>
         requires std::is_arithmetic_v<_Tp>
-    constexpr quaternion(const vec3<_Tp> &axis, const T &angle) {
-        T half_angle = angle / 2;
-        T s = std::sin(half_angle);
-        this->data[0] = std::cos(half_angle);
-        this->data[1] = axis.x() * s;
-        this->data[2] = axis.y() * s;
-        this->data[3] = axis.z() * s;
+    constexpr quaternion(const vec3<_Tp> &axis, const _T &angle) {
+        _T half_angle = angle / 2;
+        _T s = std::sin(half_angle);
+        this->r() = std::cos(half_angle);
+        this->i() = axis.x() * s;
+        this->j() = axis.y() * s;
+        this->k() = axis.z() * s;
     }
-    constexpr quaternion<T> operator*(const quaternion<T> &other) {
-        quaternion<T> res;
+
+    /**
+     * @brief Quaternion multiplication operator
+     *
+     * @param other Quaternion to multiply with
+     * @return Resulting quaternion
+     */
+    constexpr quaternion<_Tp> operator*(const quaternion<_Tp> &other) const {
+        quaternion<_Tp> res;
         res.r() = r() * other.r() - i() * other.i() - j() * other.j() -
                   k() * other.k();
         res.i() = r() * other.i() + i() * other.r() + j() * other.k() -
@@ -47,9 +139,16 @@ class quaternion : public vec<T, 4> {
                   k() * other.r();
         return res;
     }
-    constexpr quaternion<T> operator/(const quaternion<T> &other) {
-        quaternion<T> res;
-        T norm = other.norm();
+
+    /**
+     * @brief Quaternion division operator
+     *
+     * @param other Quaternion to divide by
+     * @return Resulting quaternion
+     */
+    constexpr quaternion<_Tp> operator/(const quaternion<_Tp> &other) const {
+        quaternion<_Tp> res;
+        _Tp norm = other.norm();
         res.r() = (r() * other.r() + i() * other.i() + j() * other.j() +
                    k() * other.k()) /
                   norm;
@@ -64,12 +163,31 @@ class quaternion : public vec<T, 4> {
                   norm;
         return res;
     }
-    constexpr T norm() { return r() * r() + i() * i() + j() * j() + k() * k(); }
-    constexpr vec3<T> v() { return vec3<T>{i(), j(), k()}; }
 
-    constexpr quaternion<T> inverse() {
-        quaternion<T> res;
-        T norm = this->norm();
+    /**
+     * @brief Compute norm of the quaternion
+     *
+     * @return Norm value
+     */
+    constexpr _Tp norm() const {
+        return r() * r() + i() * i() + j() * j() + k() * k();
+    }
+
+    /**
+     * @brief Get vector part of the quaternion
+     *
+     * @return Vector part as vec3<_Tp>
+     */
+    constexpr vec3<_Tp> v() { return vec3<_Tp>{i(), j(), k()}; }
+
+    /**
+     * @brief Compute inverse of the quaternion
+     *
+     * @return Inverse quaternion
+     */
+    constexpr quaternion<_Tp> inverse() {
+        quaternion<_Tp> res;
+        _Tp norm = this->norm();
         res.r() = r() / norm;
         res.i() = -i() / norm;
         res.j() = -j() / norm;
@@ -78,20 +196,146 @@ class quaternion : public vec<T, 4> {
     }
 
    public:
-    constexpr mat<T, 3, 3> to_mat() const;
-    static constexpr quaternion<T> from_mat(const mat<T, 3, 3>& mat);
+    /**
+     * @brief Convert quaternion to rotation matrix
+     *
+     * @return Rotation matrix
+     */
+    constexpr mat<_Tp, 3, 3> to_mat() const;
+
+    /**
+     * @brief Create quaternion from rotation matrix
+     *
+     * @param mat Rotation matrix
+     * @return Quaternion
+     */
+    static constexpr quaternion<_Tp> from_mat(const mat<_Tp, 3, 3> &mat);
 
    public:
-    constexpr inline T &r() { return this->data[0]; }
-    constexpr inline T &i() { return this->data[1]; }
-    constexpr inline T &j() { return this->data[2]; }
-    constexpr inline T &k() { return this->data[3]; }
-    constexpr inline const T &r() const { return this->data[0]; }
-    constexpr inline const T &i() const { return this->data[1]; }
-    constexpr inline const T &j() const { return this->data[2]; }
-    constexpr inline const T &k() const { return this->data[3]; }
+    /**
+     * @brief Get scalar part of the quaternion
+     *
+     * @return Scalar part
+     */
+    constexpr inline _Tp &r() { return this->data[3]; }
+
+    /**
+     * @brief Get i-component of the quaternion
+     *
+     * @return i-component
+     */
+    constexpr inline _Tp &i() { return this->data[0]; }
+
+    /**
+     * @brief Get j-component of the quaternion
+     *
+     * @return j-component
+     */
+    constexpr inline _Tp &j() { return this->data[1]; }
+
+    /**
+     * @brief Get k-component of the quaternion
+     *
+     * @return k-component
+     */
+    constexpr inline _Tp &k() { return this->data[2]; }
+
+    /**
+     * @brief Get scalar part of the quaternion (const version)
+     *
+     * @return Scalar part
+     */
+    constexpr inline const _Tp &r() const { return this->data[3]; }
+
+    /**
+     * @brief Get i-component of the quaternion (const version)
+     *
+     * @return i-component
+     */
+    constexpr inline const _Tp &i() const { return this->data[0]; }
+
+    /**
+     * @brief Get j-component of the quaternion (const version)
+     *
+     * @return j-component
+     */
+    constexpr inline const _Tp &j() const { return this->data[1]; }
+
+    /**
+     * @brief Get k-component of the quaternion (const version)
+     *
+     * @return k-component
+     */
+    constexpr inline const _Tp &k() const { return this->data[2]; }
+
+    /**
+     * @brief Quaternion addition operator with scalar on the right
+     *
+     * @tparam _ItemType Type of elements in the quaternion
+     * @param v Quaternion to add
+     * @param other Scalar value
+     * @return Resulting quaternion
+     */
+    template <class _ItemType>
+        requires(!std::is_same_v<_ItemType, Self<_Tp>>)
+    auto operator+(const _ItemType &other) {
+        quaternion<decltype(r() + other)> res;
+        res.r() = r() + other;
+        res.i() = i();
+        res.j() = j();
+        res.k() = k();
+        return res;
+    }
+
+    /**
+     * @brief Quaternion subtraction operator with scalar on the right
+     *
+     * @tparam _ItemType Type of elements in the quaternion
+     * @param v Quaternion to subtract
+     * @param other Scalar value
+     * @return Resulting quaternion
+     */
+    template <class _ItemType>
+        requires(!std::is_same_v<_ItemType, Self<_Tp>>)
+    auto operator-(const _ItemType &other) {
+        quaternion<decltype(r() + other)> res;
+        res.r() = r() - other;
+        res.i() = i();
+        res.j() = j();
+        res.k() = k();
+        return res;
+    }
+    template <class _ItemType>
+    auto operator-(const Self<_ItemType> &other) {
+        Self<decltype(r() + other.r())> res;
+        res.r() = r() - other.r();
+        res.i() = i() - other.i();
+        res.j() = j() - other.j();
+        res.k() = k() - other.k();
+        return res;
+    }
+    template <class _ItemType>
+    auto operator+(const Self<_ItemType> &other) {
+        Self<decltype(r() - other.r())> res;
+        res.r() = r() + other.r();
+        res.i() = i() + other.i();
+        res.j() = j() + other.j();
+        res.k() = k() + other.k();
+        return res;
+    }
 };
+
+/**
+ * @brief Quaternion addition operator with scalar on the left
+ *
+ * @tparam _Tp Type of the scalar
+ * @tparam _ItemType Type of elements in the quaternion
+ * @param other Scalar value
+ * @param v Quaternion to add to
+ * @return Resulting quaternion
+ */
 template <class _Tp, class _ItemType>
+    requires(!std::is_same_v<_Tp, quaternion<_ItemType>>)
 auto operator+(const _Tp &other, const quaternion<_ItemType> &v) {
     quaternion<decltype(_Tp{} + _ItemType{})> res;
     res.r() = other + v.r();
@@ -100,16 +344,18 @@ auto operator+(const _Tp &other, const quaternion<_ItemType> &v) {
     res.k() = v.k();
     return res;
 }
+
+/**
+ * @brief Quaternion subtraction operator with scalar on the left
+ *
+ * @tparam _Tp Type of the scalar
+ * @tparam _ItemType Type of elements in the quaternion
+ * @param other Scalar value
+ * @param v Quaternion to subtract from
+ * @return Resulting quaternion
+ */
 template <class _Tp, class _ItemType>
-auto operator+(const quaternion<_ItemType> &v, const _Tp &other) {
-    quaternion<decltype(_Tp{} + _ItemType{})> res;
-    res.r() = v.r() + other;
-    res.i() = v.i();
-    res.j() = v.j();
-    res.k() = v.k();
-    return res;
-}
-template <class _Tp, class _ItemType>
+    requires(!std::is_same_v<_Tp, quaternion<_ItemType>>)
 auto operator-(const _Tp &other, const quaternion<_ItemType> &v) {
     quaternion<decltype(_Tp{} - _ItemType{})> res;
     res.r() = other - v.r();
@@ -118,16 +364,13 @@ auto operator-(const _Tp &other, const quaternion<_ItemType> &v) {
     res.k() = -v.k();
     return res;
 }
-template <class _Tp, class _ItemType>
-auto operator-(const quaternion<_ItemType> &v, const _Tp &other) {
-    quaternion<decltype(_Tp{} - _ItemType{})> res;
-    res.r() = v.r() - other;
-    res.i() = v.i();
-    res.j() = v.j();
-    res.k() = v.k();
-    return res;
-}
 
+/**
+ * @brief Convert quaternion to rotation matrix
+ *
+ * @tparam T Type of elements in the quaternion
+ * @return Rotation matrix
+ */
 template <typename T>
 constexpr mat<T, 3, 3> quaternion<T>::to_mat() const {
     T one{};
@@ -143,8 +386,15 @@ constexpr mat<T, 3, 3> quaternion<T>::to_mat() const {
     };
 }
 
+/**
+ * @brief Create quaternion from rotation matrix
+ *
+ * @tparam T Type of elements in the quaternion
+ * @param mat Rotation matrix
+ * @return Quaternion
+ */
 template <typename T>
-constexpr quaternion<T> quaternion<T>::from_mat(const mat<T, 3, 3>& mat) {
+constexpr quaternion<T> quaternion<T>::from_mat(const mat<T, 3, 3> &mat) {
     quaternion<T> res;
     T tr = mat[0][0] + mat[1][1] + mat[2][2];
     if (tr > 0) {
@@ -172,6 +422,37 @@ constexpr quaternion<T> quaternion<T>::from_mat(const mat<T, 3, 3>& mat) {
         res.j() = (mat[1][2] + mat[2][1]) / S;
         res.k() = 0.25 * S;
     }
+    return res;
+}
+constexpr inline quaternion<int> operator""_qi(unsigned long long i) {
+    auto res = quaternion<int>(0);
+    res.i() = i;
+    return res;
+}
+constexpr inline quaternion<int> operator""_qj(unsigned long long j) {
+    auto res = quaternion<int>(0);
+    res.j() = j;
+    return res;
+}
+constexpr inline quaternion<int> operator""_qk(unsigned long long k) {
+    auto res = quaternion<int>(0);
+    res.k() = k;
+    return res;
+}
+
+constexpr inline quaternion<float> operator""_qi(long double i) {
+    auto res = quaternion<float>(0);
+    res.i() = i;
+    return res;
+}
+constexpr inline quaternion<float> operator""_qj(long double j) {
+    auto res = quaternion<float>(0);
+    res.j() = j;
+    return res;
+}
+constexpr inline quaternion<float> operator""_qk(long double k) {
+    auto res = quaternion<float>(0);
+    res.k() = k;
     return res;
 }
 

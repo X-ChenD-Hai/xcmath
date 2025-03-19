@@ -1,23 +1,76 @@
-// mat.hpp
+/**
+ * @file mat.hpp
+ * @brief Header file for matrix class template and related utilities
+ * @author XCDH
+ * @version 1.0
+ * @date 2023-10-05
+ */
+
 #ifndef XCMATH_MAT_H
 #define XCMATH_MAT_H
+
 #include <cstddef>
 
 #include "../utils/concepts.h"
+#include "./declaration.hpp"
 #include "./vec.hpp"
 
 namespace xcmath {
+/**
+ * @brief Matrix class template
+ *
+ * @tparam _Tp Type of elements in the matrix
+ * @tparam _rows Number of rows
+ * @tparam _cols Number of columns (defaults to _rows for square matrices)
+ */
 template <typename _Tp, size_t _rows, size_t _cols = _rows>
 class mat : public vec<vec<_Tp, _cols>, _rows> {
    public:
+    /**
+     * @brief Shape of the matrix (rows x columns)
+     */
     static constexpr vec2<size_t> shape{_rows, _cols};
+
+    /**
+     * @brief Inherit constructors from base class
+     */
     using vec<vec<_Tp, _cols>, _rows>::vec;
+
+    /**
+     * @brief Inherit operator[] from base class
+     */
     using vec<vec<_Tp, _cols>, _rows>::operator[];
+
+    /**
+     * @brief Inherit begin() from base class
+     */
     using vec<vec<_Tp, _cols>, _rows>::begin;
+
+    /**
+     * @brief Inherit end() from base class
+     */
     using vec<vec<_Tp, _cols>, _rows>::end;
+
+    /**
+     * @brief Inherit assignment operator from base class
+     */
     using vec<vec<_Tp, _cols>, _rows>::operator=;
+
+    /**
+     * @brief Alias for the matrix type with a different element type
+     *
+     * @tparam _T Type of elements for the new matrix
+     */
     template <class _T>
     using Self = mat<_T, _rows, _cols>;
+
+    /**
+     * @brief Matrix multiplication operator
+     *
+     * @tparam _ncols Number of columns in the right matrix
+     * @param other Right matrix to multiply with
+     * @return Resulting matrix of type mat<_Tp, _rows, _ncols>
+     */
     template <size_t _ncols>
     constexpr mat<_Tp, _rows, _ncols> operator^(
         const mat<_Tp, _cols, _ncols>& other) {
@@ -31,6 +84,14 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         }
         return res;
     }
+
+    /**
+     * @brief Matrix-vector multiplication operator
+     *
+     * @tparam _VTp Vector type
+     * @param other Vector to multiply with
+     * @return Resulting vector of type _VTp
+     */
     template <Vec _VTp>
         requires(_VTp::length == _rows) &&
                 concepts::Add<typename _VTp::DataType> &&
@@ -44,6 +105,12 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         }
         return res;
     }
+
+    /**
+     * @brief Transpose operator
+     *
+     * @return Transposed matrix of type mat<_Tp, _cols, _rows>
+     */
     constexpr mat<_Tp, _cols, _rows> T() const {
         mat<_Tp, _cols, _rows> res;
         for (size_t i = 0; i < _rows; i++) {
@@ -53,11 +120,21 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         }
         return res;
     }
+
+    /**
+     * @brief Create a matrix filled with ones
+     *
+     * @return Matrix of type mat<_Tp, _rows, _cols> filled with ones
+     */
     constexpr static mat<_Tp, _rows, _cols> ones() {
-        _Tp one{};
-        return mat<_Tp, _rows, _cols>{
-            vec<vec<_Tp, _cols>, _rows>{vec<_Tp, _cols>{++one}}};
+        return Self<_Tp>{vec<_Tp, _cols>{_Tp{1}}};
     }
+
+    /**
+     * @brief Create an identity matrix
+     *
+     * @return Identity matrix of type mat<_Tp, _rows, _cols>
+     */
     constexpr static mat<_Tp, _rows, _cols> eye() {
         mat<_Tp, _rows, _cols> res;
         size_t n = _rows < _cols ? _rows : _cols;
@@ -66,7 +143,12 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         }
         return res;
     }
-    // determinant
+
+    /**
+     * @brief Compute determinant of the matrix
+     *
+     * @return Determinant value of type _Tp
+     */
     constexpr _Tp det() const
         requires(_rows == _cols)
     {
@@ -94,156 +176,6 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         }
     }
 };
-
-template <class _Tp>
-using mat1x2 = mat<_Tp, 1, 2>;
-template <class _Tp>
-using mat1x3 = mat<_Tp, 1, 3>;
-template <class _Tp>
-using mat1x4 = mat<_Tp, 1, 4>;
-template <class _Tp>
-using mat2x1 = mat<_Tp, 2, 1>;
-template <class _Tp>
-using mat2x2 = mat<_Tp, 2, 2>;
-template <class _Tp>
-using mat2x3 = mat<_Tp, 2, 3>;
-template <class _Tp>
-using mat2x4 = mat<_Tp, 2, 4>;
-template <class _Tp>
-using mat3x1 = mat<_Tp, 3, 1>;
-template <class _Tp>
-using mat3x2 = mat<_Tp, 3, 2>;
-template <class _Tp>
-using mat3x3 = mat<_Tp, 3, 3>;
-template <class _Tp>
-using mat3x4 = mat<_Tp, 3, 4>;
-template <class _Tp>
-using mat4x1 = mat<_Tp, 4, 1>;
-template <class _Tp>
-using mat4x2 = mat<_Tp, 4, 2>;
-template <class _Tp>
-using mat4x3 = mat<_Tp, 4, 3>;
-template <class _Tp>
-using mat4x4 = mat<_Tp, 4, 4>;
-template <class _Tp>
-using mat3 = mat3x3<_Tp>;
-template <class _Tp>
-using mat4 = mat4x4<_Tp>;
-
-using mat1x2f = mat1x2<float>;
-using mat1x3f = mat1x3<float>;
-using mat1x4f = mat1x4<float>;
-using mat2x1f = mat2x1<float>;
-using mat2x2f = mat2x2<float>;
-using mat2x3f = mat2x3<float>;
-using mat2x4f = mat2x4<float>;
-using mat3x1f = mat3x1<float>;
-using mat3x2f = mat3x2<float>;
-using mat3x3f = mat3x3<float>;
-using mat3x4f = mat3x4<float>;
-using mat4x1f = mat4x1<float>;
-using mat4x2f = mat4x2<float>;
-using mat4x3f = mat4x3<float>;
-using mat4x4f = mat4x4<float>;
-
-using mat1x2d = mat1x2<double>;
-using mat1x3d = mat1x3<double>;
-using mat1x4d = mat1x4<double>;
-using mat2x1d = mat2x1<double>;
-using mat2x2d = mat2x2<double>;
-using mat2x3d = mat2x3<double>;
-using mat2x4d = mat2x4<double>;
-using mat3x1d = mat3x1<double>;
-using mat3x2d = mat3x2<double>;
-using mat3x3d = mat3x3<double>;
-using mat3x4d = mat3x4<double>;
-using mat4x1d = mat4x1<double>;
-using mat4x2d = mat4x2<double>;
-using mat4x3d = mat4x3<double>;
-using mat4x4d = mat4x4<double>;
-
-using mat1x2i = mat1x2<int>;
-using mat1x3i = mat1x3<int>;
-using mat1x4i = mat1x4<int>;
-using mat2x1i = mat2x1<int>;
-using mat2x2i = mat2x2<int>;
-using mat2x3i = mat2x3<int>;
-using mat2x4i = mat2x4<int>;
-using mat3x1i = mat3x1<int>;
-using mat3x2i = mat3x2<int>;
-using mat3x3i = mat3x3<int>;
-using mat3x4i = mat3x4<int>;
-using mat4x1i = mat4x1<int>;
-using mat4x2i = mat4x2<int>;
-using mat4x3i = mat4x3<int>;
-using mat4x4i = mat4x4<int>;
-
-using mat1x2l = mat1x2<long>;
-using mat1x3l = mat1x3<long>;
-using mat1x4l = mat1x4<long>;
-using mat2x1l = mat2x1<long>;
-using mat2x2l = mat2x2<long>;
-using mat2x3l = mat2x3<long>;
-using mat2x4l = mat2x4<long>;
-using mat3x1l = mat3x1<long>;
-using mat3x2l = mat3x2<long>;
-using mat3x3l = mat3x3<long>;
-using mat3x4l = mat3x4<long>;
-using mat4x1l = mat4x1<long>;
-using mat4x2l = mat4x2<long>;
-using mat4x3l = mat4x3<long>;
-using mat4x4l = mat4x4<long>;
-
-using mat1x2ul = mat1x2<unsigned long>;
-using mat1x3ul = mat1x3<unsigned long>;
-using mat1x4ul = mat1x4<unsigned long>;
-using mat2x1ul = mat2x1<unsigned long>;
-using mat2x2ul = mat2x2<unsigned long>;
-using mat2x3ul = mat2x3<unsigned long>;
-using mat2x4ul = mat2x4<unsigned long>;
-using mat3x1ul = mat3x1<unsigned long>;
-using mat3x2ul = mat3x2<unsigned long>;
-using mat3x3ul = mat3x3<unsigned long>;
-using mat3x4ul = mat3x4<unsigned long>;
-using mat4x1ul = mat4x1<unsigned long>;
-using mat4x2ul = mat4x2<unsigned long>;
-using mat4x3ul = mat4x3<unsigned long>;
-using mat4x4ul = mat4x4<unsigned long>;
-
-using mat1x2b = mat1x2<bool>;
-using mat1x3b = mat1x3<bool>;
-using mat1x4b = mat1x4<bool>;
-using mat2x1b = mat2x1<bool>;
-using mat2x2b = mat2x2<bool>;
-using mat2x3b = mat2x3<bool>;
-using mat2x4b = mat2x4<bool>;
-using mat3x1b = mat3x1<bool>;
-using mat3x2b = mat3x2<bool>;
-using mat3x3b = mat3x3<bool>;
-using mat3x4b = mat3x4<bool>;
-using mat4x1b = mat4x1<bool>;
-using mat4x2b = mat4x2<bool>;
-using mat4x3b = mat4x3<bool>;
-using mat4x4b = mat4x4<bool>;
-
-using mat2f = mat2x2f;
-using mat3f = mat3x3f;
-using mat4f = mat4x4f;
-using mat2d = mat2x2d;
-using mat3d = mat3x3d;
-using mat4d = mat4x4d;
-using mat2i = mat2x2i;
-using mat3i = mat3x3i;
-using mat4i = mat4x4i;
-using mat2l = mat2x2l;
-using mat3l = mat3x3l;
-using mat4l = mat4x4l;
-using mat2ul = mat2x2ul;
-using mat3ul = mat3x3ul;
-using mat4ul = mat4x4ul;
-using mat2b = mat2x2b;
-using mat3b = mat3x3b;
-using mat4b = mat4x4b;
 
 }  // namespace xcmath
 

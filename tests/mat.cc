@@ -1,4 +1,5 @@
 #include <gtest/gtest.h>
+
 #include <xcmath.hpp>
 
 TEST(Method, det__1x1) {
@@ -90,6 +91,19 @@ TEST(Method, det__SingularMatrix) {
     EXPECT_FLOAT_EQ(singular.det(), 0.0f);
 }
 
-TEST(Method, nat_muti_vec){
-
+TEST(Method, nat_muti_vec) {
+    using namespace xcmath;
+    xcmath::mat<float, 2, 2> mat1;
+    mat1[0][0] = 1.0f;
+    mat1[0][1] = 2.0f;
+    mat1[1][0] = 3.0f;
+    mat1[1][1] = 4.0f;
+    xcmath::vec<float, 2> vec1;
+    vec1[0] = 5.0f;
+    vec1[1] = 6.0f;
+    auto res = mat1 ^ vec1;
+    auto result = vec{17.0f, 39.0f};
+    auto result2 = vec{12.0f, 39.0f};
+    EXPECT_TRUE((res == result).all());
+    EXPECT_FALSE((res == result2).all());
 }

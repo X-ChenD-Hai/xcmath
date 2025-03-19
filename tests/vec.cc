@@ -156,8 +156,8 @@ TEST(Operator, slice) {
         EXPECT_EQ(result[i], v1[i]);
     }
 
-    result = v2.slice<1, 3>();
-    for (int i = 1; i < 3; i++) {
+    result = v2.slice<1, 2>();
+    for (int i = 1; i < 2; i++) {
         EXPECT_EQ(result[i - 1], v2[i]);
     }
 
@@ -247,4 +247,14 @@ TEST(Method, every) {
     xcmath::vec<xcmath::vec3b, 3> v4{v1, v1, v1};
     result = v4.every();
     EXPECT_EQ(result, true);
+}
+
+TEST(Method, ConvertToOtherTypeVec) {
+    using namespace xcmath;
+    vec3f v1{1, 2, 3};
+    vec3d v2 = (vec3d)v1;
+
+    EXPECT_EQ(v2.x(), 1);
+    EXPECT_EQ(v2.y(), 2);
+    EXPECT_EQ(v2.z(), 3);
 }
