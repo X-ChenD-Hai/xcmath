@@ -7,7 +7,7 @@ This is a math library for xcal.
 #include <xcmath.hpp>
 int main() {
     // Your code here
-    xcmath::Matrix<double> A(2, 2);
+    xcmath::nat A(2, 2);
     return 0;
 }
 
