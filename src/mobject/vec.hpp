@@ -56,42 +56,61 @@ concept Vec = requires(T a) {
  */
 template <class vec, class _Item>
 concept VecItem = requires {
-    Vec<vec>;
-    std::convertible_to<typename vec::ItemType, _Item>;
+    requires(Vec<vec>);
+    requires(std::convertible_to<typename vec::ItemType, _Item>);
 };
-
 /**
  * @brief Compute the size of a pack of vector construct arguments
  *
  * @tparam Args Types of arguments
  */
-template <class... Args>
-constexpr size_t VecConstructPackSize = ((([]<class Arg = Args>() {
-                                             if constexpr (Vec<Arg>) {
-                                                 return Arg::length;
-                                             } else {
-                                                 return 1;
-                                             }
-                                         })()) +
-                                         ...);
+template <class Arg, class... Args>
+constexpr size_t VecConstructPackSize =
+    VecConstructPackSize<Arg> + VecConstructPackSize<Args...>;
 
-template <>
-inline constexpr size_t VecConstructPackSize<> = 0;
+template <class Arg>
+inline constexpr size_t VecConstructPackSize<Arg> = []() -> size_t {
+    if constexpr (Vec<Arg>)
+        return Arg::length;
+    else
+        return 1;
+}();
 
-/**
- * @brief Get the zero item for a type
- *
- * @tparam _Tp Type to get zero item for
- * @return Item of type _Tp initialized to zero
- */
 template <class _Tp>
-static constexpr auto get_item_zero() {
-    if constexpr (Vec<_Tp>) {
-        return get_item_zero<typename _Tp::ItemType>();
-    } else {
-        return _Tp{};
-    }
-}
+struct VecInfo {
+#ifdef _MSVC_VER
+    static constexpr size_t Dim = []() -> size_t {
+        if constexpr (Vec<_Tp>) return VecInfo<_Tp::ItemType>::Dim + 1;
+        return 0;
+    }();
+    static constexpr auto Zero = []() {
+        if constexpr (Vec<_Tp>)
+            return VecInfo<_Tp::ItemType>::Zero;
+        else
+            return _Tp{};
+    }();
+    using DataType = decltype(Zero);
+#else
+    static constexpr size_t Dim = []() -> size_t {
+        if constexpr (Vec<_Tp>) return VecInfo<typename _Tp::ItemType>::Dim + 1;
+        return 0;
+    }();
+
+    static constexpr auto Zero = []() {
+        if constexpr (Vec<_Tp>)
+            return VecInfo<typename _Tp::ItemType>::Zero;
+        else
+            return _Tp{};
+    }();
+    using DataType = decltype([]() {
+        if constexpr (Vec<_Tp>)
+            return VecInfo<typename _Tp::ItemType>::Zero;
+        else
+            return _Tp{};
+    }());
+
+#endif
+};
 
 /**
  * @brief Vector class template
@@ -117,7 +136,8 @@ class vec {
     /**
      * @brief Type of data stored in the vector
      */
-    using DataType = decltype(get_item_zero<ItemType>());
+    using DataType = typename VecInfo<ItemType>::DataType;
+    static constexpr size_t Dim = VecInfo<ItemType>::Dim + 1;
 
     /**
      * @brief Alias for the vector type with a different element type
@@ -130,12 +150,12 @@ class vec {
     /**
      * @brief Name of the data type
      */
-    constexpr static auto datatype = get_type_name<DataType>();
+    constexpr static auto datatype = TypeName<DataType>;
 
     /**
      * @brief Name of the item type
      */
-    constexpr static auto itemtype = get_type_name<ItemType>();
+    constexpr static auto itemtype = TypeName<ItemType>;
 
     /**
      * @brief Length of the vector

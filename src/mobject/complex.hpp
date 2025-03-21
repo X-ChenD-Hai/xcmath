@@ -15,7 +15,7 @@ class complex {
    public:
     T real;
     T imag;
-    static constexpr auto Type = get_type_name<T>();
+    static constexpr auto Type = TypeName<T>;
 
     complex(const T& real, const T& imag) : real(real), imag(imag) {}
     complex(const T& real)
