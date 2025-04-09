@@ -44,6 +44,7 @@ concept Vec = requires(T a) {
     std::is_same_v<typename T::template Self<typename T::DataType>, T>;
     T::datatype;
     T::itemtype;
+    { T::dim } -> std::same_as<const size_t&>;
     { T::length } -> std::same_as<const size_t&>;
     { a[T::length - 1] } -> std::same_as<typename T::ItemType&>;
 };
@@ -91,8 +92,8 @@ struct VecInfo {
     }();
     using DataType = decltype(Zero);
 #else
-    static constexpr size_t Dim = []() -> size_t {
-        if constexpr (Vec<_Tp>) return VecInfo<typename _Tp::ItemType>::Dim + 1;
+    static constexpr size_t dim = []() -> size_t {
+        if constexpr (Vec<_Tp>) return VecInfo<typename _Tp::ItemType>::dim + 1;
         return 0;
     }();
 
@@ -137,7 +138,7 @@ class vec {
      * @brief Type of data stored in the vector
      */
     using DataType = typename VecInfo<ItemType>::DataType;
-    static constexpr size_t Dim = VecInfo<ItemType>::Dim + 1;
+    static constexpr size_t dim = VecInfo<ItemType>::dim + 1;
 
     /**
      * @brief Alias for the vector type with a different element type
@@ -664,14 +665,15 @@ class vec {
         return *this;
     }
 
-#define __VEC_OP_VEC_ON_EQ_LENGTH(op)             \
-    template <class _OTp>                         \
-    auto operator op(const Self<_OTp>& o) const { \
-        Self<decltype(data[0] op o.data[0])> res; \
-        for (size_t i = 0; i < _length; i++) {    \
-            res[i] = data[i] op o.data[i];        \
-        }                                         \
-        return res;                               \
+#define __VEC_OP_VEC_ON_EQ_LENGTH(op)          \
+    template <class _OTp>                      \
+        requires(dim == VecInfo<_OTp>::dim)    \
+    auto operator op(const _OTp& o) const {    \
+        Self<decltype(data[0] op o[0])> res;   \
+        for (size_t i = 0; i < _length; i++) { \
+            res[i] = data[i] op o[i];          \
+        }                                      \
+        return res;                            \
     }
     __VEC_OP_VEC_ON_EQ_LENGTH(+)
     __VEC_OP_VEC_ON_EQ_LENGTH(-)
@@ -689,15 +691,15 @@ class vec {
     __VEC_OP_VEC_ON_EQ_LENGTH(<=)
 #undef __VEC_OP_VEC_ON_EQ_LENGTH
 
-#define __VEC_OP_ITEM_ON_OP_ABLE(op)                   \
-    template <class _OTp>                              \
-        requires(!std::is_same_v<Self<_Tp>, _OTp>)     \
-    inline constexpr auto operator op(const _OTp& o) { \
-        Self<decltype(data[0] op o)> res;              \
-        for (size_t i = 0; i < _length; i++) {         \
-            res[i] = data[i] op o;                     \
-        }                                              \
-        return res;                                    \
+#define __VEC_OP_ITEM_ON_OP_ABLE(op)                                       \
+    template <class _OTp>                                                  \
+        requires(VecInfo<_OTp>::dim == 0 || dim == VecInfo<_OTp>::dim + 1) \
+    inline constexpr auto operator op(const _OTp& o) {                     \
+        Self<decltype(data[0] op o)> res;                                  \
+        for (size_t i = 0; i < _length; i++) {                             \
+            res[i] = data[i] op o;                                         \
+        }                                                                  \
+        return res;                                                        \
     }
     __VEC_OP_ITEM_ON_OP_ABLE(+)
     __VEC_OP_ITEM_ON_OP_ABLE(-)
@@ -718,12 +720,14 @@ class vec {
 
 #define __ITEM_OP_VEC_ON_OP_ENABLE(op)                                   \
     template <class _OTp, Vec _Tp>                                       \
-        requires(!std::is_same_v<_Tp, _OTp>)                             \
+        requires(VecInfo<_OTp>::dim == 0 ||                              \
+                 (VecInfo<_OTp>::dim == _Tp::dim - 1))                   \
     inline constexpr auto operator op(const _OTp& other, const _Tp& o) { \
         typename _Tp::template Self<decltype(other op o[0])> res;        \
         for (size_t i = 0; i < _Tp::length; i++) res[i] = other[i] + o;  \
         return res;                                                      \
     }
+
 __ITEM_OP_VEC_ON_OP_ENABLE(+)
 __ITEM_OP_VEC_ON_OP_ENABLE(-)
 __ITEM_OP_VEC_ON_OP_ENABLE(*)
