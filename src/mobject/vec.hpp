@@ -724,7 +724,7 @@ class vec {
                  (VecInfo<_OTp>::dim == _Tp::dim - 1))                   \
     inline constexpr auto operator op(const _OTp& other, const _Tp& o) { \
         typename _Tp::template Self<decltype(other op o[0])> res;        \
-        for (size_t i = 0; i < _Tp::length; i++) res[i] = other[i] + o;  \
+        for (size_t i = 0; i < _Tp::length; i++) res[i] = other op o[i]; \
         return res;                                                      \
     }
 

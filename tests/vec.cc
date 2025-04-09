@@ -277,7 +277,7 @@ TEST(Method, EqualOoperator) {
     using namespace xcmath;
     Point v1{1, 2};
     Point v2{1, 2};
-    v2 = xcmath::vec2{1, 2};
+    v2 = vec2{1, 2};
     v2 = v1 + v2;
     v2 = (v1 + v1);
     auto s = VecInfo<vec3b>::dim;
