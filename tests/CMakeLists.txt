@@ -24,3 +24,11 @@ add_test(NAME utils COMMAND test_utils)
 add_test(NAME graphics COMMAND test_graphics)
 add_test(NAME function COMMAND test_function)
 add_test(NAME quaternion COMMAND test_quaternion)
+
+
+
+
+
+add_executable(test_symbol symbol.cc)
+target_link_libraries(test_symbol xcmath xcmath::symbool_system ${GTEST_BOTH_LIBRARIES})
+
