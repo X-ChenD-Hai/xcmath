@@ -258,3 +258,40 @@ TEST(Method, ConvertToOtherTypeVec) {
     EXPECT_EQ(v2.y(), 2);
     EXPECT_EQ(v2.z(), 3);
 }
+template <typename T = float>
+class Point final : public xcmath::vec2<T> {
+    using vec2 = xcmath::vec2<T>;
+
+   public:
+    Point(T x = T{}, T y = T{}) : xcmath::vec2<T>(x, y) {}
+    Point(const vec2& data) : xcmath::vec2<T>(data) {}
+    Point(const Point& o) : vec2((vec2)o) {}
+    T x() const { return xcmath::vec2f::x(); }
+    T y() const { return xcmath::vec2f::y(); }
+    void setX(T x) { xcmath::vec2f::x() = x; }
+    void setY(T y) { xcmath::vec2f::y() = y; }
+    const std::array<T, 2>& array() const { return *((std::array<T, 2>*)this); }
+    operator const vec2&() const { return *(xcmath::vec2<T>*)this; }
+};
+TEST(Method, EqualOoperator) {
+    using namespace xcmath;
+    Point v1{1, 2};
+    Point v2{1, 2};
+    v2 = vec2{1, 2};
+    v2 = v1 + v2;
+    v2 = (v1 + v1);
+    auto s = VecInfo<vec3b>::dim;
+    s = VecInfo<vec3<vec3b>>::dim;
+    // auto s = VecInfo<vec3<vec3<vec3b>>>::dim;
+    auto s1 = VecInfo<vec3<vec3<vec4d>>>::Zero;
+}
+using namespace xcmath;
+using namespace std;
+TEST(operator, all) {
+    vec3f v1{1, 2, 3};
+    vec3d v2{1, 2, 3};
+    vec3<vec3<vec3f>> v4{};
+    v4 + 1.2;
+    1.2 + v4;
+    auto result = v1 + v2;
+}

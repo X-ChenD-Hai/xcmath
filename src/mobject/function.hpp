@@ -22,7 +22,7 @@ namespace xcmath {
  * @return Equivalent radians value
  */
 template <typename T>
-inline constexpr float radians(T degrees) {
+inline constexpr T radians(T degrees) {
     return degrees * PI / 180.0;
 };
 
@@ -34,7 +34,7 @@ inline constexpr float radians(T degrees) {
  * @return Equivalent degrees value
  */
 template <typename T>
-inline constexpr float degrees(T radians) {
+inline constexpr T degrees(T radians) {
     return radians * 180.0 / PI;
 };
 
@@ -82,14 +82,13 @@ mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _Tp angle,
  * @param angle Rotation angle in degrees
  * @return Rotated matrix
  */
-template <class _Tp, size_t _dim = 3>
-mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _Tp angle) {
+template <class _Tp, class _MTp = _Tp, size_t _dim = 3>
+    requires(std::is_floating_point_v<_Tp> && (_dim == 3 || _dim == 4))
+mat<_MTp, _dim, _dim> rotate(const mat<_MTp, _dim, _dim>& m, _Tp angle) {
     angle = radians(angle);
     auto res = mat<_Tp, _dim, _dim>::eye();
-    res[0][0] = std::cos(angle);
-    res[0][1] = -std::sin(angle);
-    res[1][0] = std::sin(angle);
-    res[1][1] = std::cos(angle);
+    res[1][1] = res[0][0] = std::cos(angle);
+    res[0][1] = -(res[1][0] = std::sin(angle));
     return res ^ m;
 }
 
@@ -105,8 +104,9 @@ mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _Tp angle) {
  * @param z Z-coordinate of rotation axis
  * @return Rotated matrix
  */
-template <class _Tp, size_t _dim = 3>
-mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _Tp angle, _Tp x,
+template <class _Tp, class _ATp = _Tp, size_t _dim = 3>
+    requires(std::is_floating_point_v<_Tp> && std::is_floating_point_v<_ATp>)
+mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _ATp angle, _Tp x,
                             _Tp y, _Tp z) {
     return rotate(m, angle, vec<_Tp, 3>(x, y, z));
 }
@@ -146,6 +146,42 @@ constexpr mat<_Tp, _dim, _dim> translate(const mat<_Tp, _dim, _dim>& m,
                                          const vec<_Tp, _dim>& v) {
     return translate(m, v.template slice<_dim - 1>());
 }
+
+/**
+ * @brief Apply translation to a matrix
+ *
+ * @param m Input matrix to apply translation
+ * @param v Translation vector
+ * @return Translated matrix
+ */
+template <class _Tp, class _ATp = _Tp, size_t _dim = 4>
+    requires(std::is_floating_point_v<_Tp> && std::is_floating_point_v<_ATp> &&
+             (_dim == 4 || _dim == 3))
+constexpr mat<_Tp, _dim, _dim> scale(const mat<_Tp, _dim, _dim>& m,
+                                     const vec<_ATp, _dim - 1>& v) {
+    auto res = mat<_Tp, _dim, _dim>(m);
+    res[0][0] *= v[0];
+    res[1][1] *= v[1];
+    if constexpr (_dim == 4) res[2][2] *= v[2];
+    return res;
+}
+/**
+ * @brief Scale a matrix by a vector
+ * @tparam _Tp The type of the matrix
+ * @tparam _STp The type of the vector
+ *
+ * @param m The matrix to scale
+ * @param v The vector to scale by
+ * @return The scaled matrix
+ */
+
+template <class _Tp, class _STp, size_t _dim = 4>
+    requires(std::is_arithmetic_v<_STp> && (_dim == 4 || _dim == 3))
+constexpr mat<_Tp, _dim, _dim> scale(const mat<_Tp, _dim, _dim>& m,
+                                     const _STp s) {
+    return scale(m, vec<_Tp, _dim - 1>(s));
+}
+
 }  // namespace xcmath
 
 #endif

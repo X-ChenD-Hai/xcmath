@@ -34,7 +34,7 @@ class quaternion : public vec<_Tp, 4> {
     /**
      * @brief Type of data stored in the vector
      */
-    using DataType = decltype(get_item_zero<ItemType>());
+    using DataType = VecInfo<ItemType>::DataType;
 
     /**
      * @brief Alias for the vector type with a different element type
@@ -47,12 +47,12 @@ class quaternion : public vec<_Tp, 4> {
     /**
      * @brief Name of the data type
      */
-    constexpr static auto datatype = get_type_name<DataType>();
+    constexpr static auto datatype = TypeName<DataType>;
 
     /**
      * @brief Name of the item type
      */
-    constexpr static auto itemtype = get_type_name<ItemType>();
+    constexpr static auto itemtype = TypeName<ItemType>;
 
     /**
      * @brief Length of the vector
