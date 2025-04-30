@@ -45,10 +45,10 @@ constexpr auto TypeName = []<class _Obj = Object>() {
     constexpr size_t end = fully_name.rfind(">");
 #endif
 
-    //   constexpr auto type_name_view = fully_name.substr(begin, end - begin);
-    //   return [&]<size_t... index>(std::index_sequence<index...>) {
-    //       return static_string<type_name_view[index]..., '\0'>{};
-    //   }((std::make_index_sequence<end - begin>{}));
+      constexpr auto type_name_view = fully_name.substr(begin, end - begin);
+      return [&]<size_t... index>(std::index_sequence<index...>) {
+          return static_string<type_name_view[index]..., '\0'>{};
+      }((std::make_index_sequence<end - begin>{}));
 }();
 #endif
 }  // namespace xcmath
