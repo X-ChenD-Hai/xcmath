@@ -17,6 +17,9 @@ target_link_libraries(test_quaternion xcmath ${GTEST_BOTH_LIBRARIES})
 add_executable(test_graphics graphics.cc)
 target_link_libraries(test_graphics PRIVATE xcmath glm::glm ${GTEST_BOTH_LIBRARIES})
 
+add_executable(test_symbol symbol.cc)
+target_link_libraries(test_symbol xcmath xcmath::symbol_system ${GTEST_BOTH_LIBRARIES})
+
 # message(FATAL_ERROR ${CMAKE_CURRENT_BINARY_DIR}/test_xcmath)
 add_test(NAME mat COMMAND test_mat)
 add_test(NAME vec COMMAND test_vec)
@@ -24,11 +27,6 @@ add_test(NAME utils COMMAND test_utils)
 add_test(NAME graphics COMMAND test_graphics)
 add_test(NAME function COMMAND test_function)
 add_test(NAME quaternion COMMAND test_quaternion)
+add_test(NAME symbol_system COMMAND test_symbol)
 
-
-
-
-
-add_executable(test_symbol symbol.cc)
-target_link_libraries(test_symbol xcmath xcmath::symbool_system ${GTEST_BOTH_LIBRARIES})
 

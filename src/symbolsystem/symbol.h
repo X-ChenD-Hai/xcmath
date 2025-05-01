@@ -4,12 +4,12 @@
 
 #include "./xcmathConfig.h"
 namespace xcmath {
-class XCMATH_API symbol {
+class XCMATH_API Symbol {
    private:
     std::string __name;
 
    public:
-    symbol(const std::string &name);
+    Symbol(const std::string &name);
     const std::string &name() const;
 };
 }  // namespace xcmath

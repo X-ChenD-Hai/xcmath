@@ -1,3 +1,3 @@
 #include "./symbol.h"
-const std::string &xcmath::symbol::name() const { return __name; }
-xcmath::symbol::symbol(const std::string &name) : __name(name) {}
+const std::string &xcmath::Symbol::name() const { return __name; }
+xcmath::Symbol::Symbol(const std::string &name) : __name(name) {}
