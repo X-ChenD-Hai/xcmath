@@ -3,28 +3,16 @@
 #include <vector>
 
 #include "./ops/ops.h"
-#include "./symbol.h"
 #include "./xcmathConfig.h"
-
 namespace xcmath {
+    class Symbol;
 class XCMATH_API Expression {
-    friend Expression operator+(const Symbol &sym1, const Symbol &sym2);
+    public:
+    Expression() = default;
+    ~Expression() = default;
 
-   protected:
-    struct Node {
-        union {
-            ops::Ops *op;
-            Symbol *sym;
-        } v;
-        Node(ops::Ops *op) { this->v.op = op; }
-        Node(Symbol *sym) { this->v.sym = sym; }
-    };
-    std::vector<Expression> __children;
+    virtual Expression& operator+();
 };
-
-Expression XCMATH_API operator+(const Symbol &sym1, const Symbol &sym2);
-// Expression XCMATH_API &operator+(Expression &exp, const Symbol &sym);
-Expression XCMATH_API &operator+(const Symbol &sym, Expression &exp);
 };  // namespace xcmath
 
 #endif  // XCMATH_SYMBOLSYSTEM_EXPRESSION_H
