@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include "./Constant.h"
+#include "./constant.h"
 #include "./xcmathConfig.h"
 
 namespace xcmath {
@@ -19,8 +19,8 @@ class XCMATH_API Monomial {
     Monomial(const CoefficientPack& ceoffient_pack,
              const VariablePack& variable_pack);
     ~Monomial() = default;
-    public:
-    
+
+   public:
     Monomial operator*(const Monomial& o);
     Monomial operator*(const Symbol& o);
 };

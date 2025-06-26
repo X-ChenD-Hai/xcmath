@@ -1,13 +1,11 @@
 #ifndef XCMATH_SYMBOLSYSTEM_CONSTANT_H
 #define XCMATH_SYMBOLSYSTEM_CONSTANT_H
-#include <vector>
 
-#include "./ops/ops.h"
 #include "./xcmathConfig.h"
 namespace xcmath {
-    class Symbol;
+class Symbol;
 class XCMATH_API Constant {
-    public:
+   public:
     Constant() = default;
     ~Constant() = default;
 

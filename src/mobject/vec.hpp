@@ -1,17 +1,25 @@
 /**
  * @file vec.hpp
- * @brief Header file for vector class template and related utilities
+ * @brief N-dimensional mathematical vector implementation with template
+ * metaprogramming support
  * @author XCDH
- * @version 1.0
+ * @version 2.1
  * @date 2023-10-05
+ *
+ * Provides a type-safe, dimension-aware vector implementation supporting:
+ * - Basic linear algebra operations
+ * - Component-wise operations
+ * - Template meta-programming for dimension and type checking
+ * - Cross/dot products and vector normalization
+ * - Swizzling operations and slice views
  */
 
 #ifndef VEC_H
 #define VEC_H
 
 /**
- * @brief Check if the compiler is MSVC
- *
+ * @brief Compiler-specific type information handling for MSVC
+ * @details Provides workarounds for MSVC's type system differences
  */
 #ifdef _MSVC_VER
 #include <vcruntime_typeinfo.h>
@@ -29,13 +37,20 @@
 
 /**
  * @namespace xcmath
- * @brief Namespace for extended C++ math utilities
+ * @brief Namespace for extended mathematical utilities
+ * @details Contains vector implementations, algebraic structures,
+ *          and related meta-programming utilities
  */
 namespace xcmath {
+template <typename _Tp, size_t _length>
+    requires(_length > 0 && std::is_default_constructible_v<_Tp>)
+class vec;
 /**
- * @brief Concept to check if a type is a vector
- *
- * @tparam T Type to check
+ * @brief Type requirement concept for vector types
+ * @tparam T Type to validate as a vector
+ * @requires - Must have nested DataType and ItemType typedefs
+ *          - Must have static dimension and length constants
+ *          - Must support element access via operator[]
  */
 template <class T>
 concept Vec = requires(T a) {
@@ -50,10 +65,11 @@ concept Vec = requires(T a) {
 };
 
 /**
- * @brief Concept to check if a type is a valid item type for a vector
- *
- * @tparam vec Vector type
- * @tparam _Item Item type to check
+ * @brief Concept for valid vector component types
+ * @tparam vec Vector type to check
+ * @tparam _Item Candidate component type
+ * @requires - vec must satisfy Vec concept
+ *          - _Item must be convertible to vector's ItemType
  */
 template <class vec, class _Item>
 concept VecItem = requires {
@@ -61,9 +77,10 @@ concept VecItem = requires {
     requires(std::convertible_to<typename vec::ItemType, _Item>);
 };
 /**
- * @brief Compute the size of a pack of vector construct arguments
- *
- * @tparam Args Types of arguments
+ * @brief Metafunction computing total size of vector constructor arguments
+ * @tparam Args Variadic argument types (vectors and/or scalars)
+ * @return Total number of elements when expanded (recursively counts vector
+ * elements)
  */
 template <class Arg, class... Args>
 constexpr size_t VecConstructPackSize =
@@ -76,6 +93,32 @@ inline constexpr size_t VecConstructPackSize<Arg> = []() -> size_t {
     else
         return 1;
 }();
+
+/**
+ * @brief Compile-time index sequence for vector slicing operations
+ * @tparam _idx Parameter pack of indices defining the slice
+ * @note Used to create view-like slices of vectors without copying data
+ */
+template <size_t... _idx>
+struct Slice {
+    static constexpr size_t length =
+        sizeof...(_idx);  ///< Number of elements in slice
+};
+
+template <size_t _From, size_t _To, size_t _Step = 1>
+static constexpr auto slice_from_to = []() {
+    return [&]<size_t... _Pack>(this auto&& self) {
+        if constexpr (_Step * sizeof...(_Pack) < _To - _From + 1)
+            return self.template
+            operator()<_Pack..., _From + _Step * sizeof...(_Pack)>();
+        else
+            return Slice<_Pack...>();
+    }();
+}();
+
+template <size_t _Start, size_t _Len, size_t _Step = 1>
+static constexpr auto slice_start_len =
+    slice_from_to<_Start, _Start + (_Step * _Len) - 1, _Step>;
 
 template <class _Tp>
 struct VecInfo {
@@ -111,20 +154,47 @@ struct VecInfo {
     }());
 
 #endif
+    template <class _Sl, class... _Sls>
+    static constexpr auto SubVecZero = []() constexpr {
+        if constexpr (sizeof...(_Sls))
+            return int{};
+        else
+            return std::declval<float>();
+    }();
+    template <class _Sl, class... _Sls>
+    using SubVec = decltype(SubVecZero<_Sl, _Sls...>);
 };
 
+template <class T, size_t len, size_t... lens>
+struct __batchHelper {
+    using Type = vec<typename __batchHelper<T, lens...>::Type, len>;
+};
+template <class T, size_t len>
+struct __batchHelper<T, len> {
+    using Type = vec<T, len>;
+};
+template <class T, size_t len, size_t... lens>
+using batch = __batchHelper<T, len, lens...>::Type;
 /**
- * @brief Vector class template
+ * @brief N-dimensional mathematical vector template
+ * @tparam _Tp Arithmetic type of vector components
+ * @tparam _length Dimension of the vector (1-4 for swizzle operations)
+ * @requires _Tp must be default constructible and support basic arithmetic
+ * operations
  *
- * @tparam _Tp Type of elements in the vector
- * @tparam _length Length of the vector
+ * Provides:
+ * - Component-wise operations
+ * - Vector space operations (addition, scaling, etc.)
+ * - Geometric operations (dot/cross products, normalization)
+ * - Type-safe dimensional operations through template metaprogramming
  */
 template <typename _Tp, size_t _length>
     requires(_length > 0 && std::is_default_constructible_v<_Tp>)
 class vec {
    protected:
     /**
-     * @brief Data array of the vector
+     * @brief Component storage array
+     * @details Contiguous memory storage following standard vector layout
      */
     _Tp data[_length];
 
@@ -141,10 +211,29 @@ class vec {
     static constexpr size_t dim = VecInfo<ItemType>::dim + 1;
 
     /**
-     * @brief Alias for the vector type with a different element type
-     *
-     * @tparam _T Type of elements for the new vector
+     * @brief Metafunction for type transformation
+     * @tparam _T New component type
+     * @returns Vector type with specified component type and same dimension
      */
+
+    template <class __Tp, size_t __len, size_t... __lens>
+    struct __subVecHelper {};
+
+    template <size_t __len, size_t... __lens>
+    struct __subVecHelper<size_t, __len, __lens...> {
+        using Type = vec<typename ItemType::template SubVec<__lens...>, __len>;
+    };
+    template <size_t __len>
+    struct __subVecHelper<size_t, __len> {
+        using Type = vec<ItemType, __len>;
+    };
+
+    template <size_t __len, size_t... __lens>
+    using SubVec = __subVecHelper<size_t, __len, __lens...>::Type;
+
+    // template <size_t __len>
+    // using SubVec<__len> = vec<ItemType, __len>;
+
     template <class _T>
     using Self = vec<_T, _length>;
 
@@ -162,6 +251,101 @@ class vec {
      * @brief Length of the vector
      */
     constexpr static auto length = _length;
+
+    /**
+     * @brief Construct a zero-initialized vector
+     * @requires _Tp must be default constructible
+     */
+    constexpr vec()
+        requires(std::is_default_constructible_v<_Tp>)
+        : data{_Tp{}} {}
+
+    /**
+     * @brief Construct from component values
+     * @param arg1 First component value
+     * @param args Remaining component values
+     * @tparam _Tp1 Type of first component (must be convertible to _Tp)
+     * @tparam _T Types of remaining components (must be convertible to _Tp)
+     * @requires All arguments must be convertible to component type _Tp
+     * @throws std::out_of_range if too many arguments provided
+     */
+    template <class _Tp1, class... _T>
+        requires(std::is_convertible_v<_Tp1, _Tp> &&
+                 (std::is_convertible_v<_T, _Tp> && ...))
+    constexpr vec(const _Tp1& arg1, const _T&... args) {
+        size_t i = 0;
+        data[0] = arg1;
+        ((data[++i] = args), ...);
+    }
+
+    /**
+     * @brief Construct from mixed scalars and vectors
+     * @param args Component initializers (scalars or vectors to flatten)
+     * @tparam _Args Variadic argument types
+     * @requires Total elements from args must exactly match vector length
+     *           Each argument must be convertible to _Tp or be a vector of _Tp
+     */
+    template <typename... _Args>
+        requires((VecConstructPackSize<_Args...> <= _length &&
+                  VecConstructPackSize<_Args...> > 1) &&
+                 ((VecItem<_Args, ItemType> ||
+                   std::is_convertible_v<_Args, ItemType>) &&
+                  ...))
+    constexpr explicit vec(const _Args&... args) {
+        size_t n = 0;
+        (([&]<class _Arg>(_Arg _arg) {
+             if constexpr (std::is_convertible_v<_Arg, ItemType>)
+                 data[n++] = _arg;
+             else {
+                 for (auto& i : _arg) data[n++] = i;
+             }
+         }(args)),
+         ...);
+    }
+
+    /**
+     * @brief Uniform value constructor
+     * @param fill_value Value to initialize all components
+     * @tparam T Type of fill value (must be convertible to _Tp)
+     */
+    template <class T>
+        requires(std::is_convertible_v<T, ItemType>)
+    constexpr explicit vec(const T& fill_value) {
+        for (size_t i = 0; i < length; i++) {
+            data[i] = fill_value;
+        }
+    }
+
+    /**
+     * @brief Copy constructor
+     * @param other Vector to copy
+     * @note Performs deep copy of all components
+     */
+    constexpr vec(const vec<_Tp, _length>& other) {
+        for (size_t i = 0; i < _length; i++) {
+            data[i] = other[i];
+        }
+    }
+
+    /**
+     * @brief Move constructor
+     * @param o Vector to move from
+     * @note Component values are moved if _Tp supports move semantics,
+     *       otherwise copies are performed
+     */
+    constexpr vec(vec<_Tp, _length>&& o) {
+        for (size_t i = 0; i < _length; i++) {
+            data[i] = o[i];
+        }
+    }
+
+    constexpr vec(const std::initializer_list<ItemType>& list) {
+        size_t i = 0;
+        for (auto it : list) {
+            assert(i < _length);
+            data[i++] = it;
+        }
+    }
 
     /**
      * @brief Get pointer to the beginning of the data array
@@ -197,75 +381,6 @@ class vec {
     }
 
     /**
-     * @brief Default constructor
-     */
-    constexpr vec()
-        requires(std::is_default_constructible_v<_Tp>)
-        : data{_Tp{}} {}
-
-    /**
-     * @brief Constructor with initializer list
-     *
-     * @param arg1 First argument
-     * @param args Remaining arguments
-     */
-    template <class _Tp1, class... _T>
-        requires(std::is_convertible_v<_Tp1, _Tp> &&
-                 (std::is_convertible_v<_T, _Tp> && ...))
-    constexpr vec(const _Tp1& arg1, const _T&... args) {
-        size_t i = 0;
-        data[0] = arg1;
-        ((data[++i] = args), ...);
-    }
-
-    /**
-     * @brief Constructor with multiple arguments
-     *
-     * @param args Arguments to initialize the vector
-     */
-    template <typename... _Args>
-        requires((VecConstructPackSize<_Args...> <= _length &&
-                  VecConstructPackSize<_Args...> > 1) &&
-                 ((VecItem<_Args, ItemType> ||
-                   std::is_convertible_v<_Args, ItemType>) &&
-                  ...))
-    constexpr explicit vec(const _Args&... args) {
-        size_t n = 0;
-        (([&]<class _Arg>(_Arg _arg) {
-             if constexpr (std::is_convertible_v<_Arg, ItemType>)
-                 data[n++] = _arg;
-             else {
-                 for (auto& i : _arg) data[n++] = i;
-             }
-         }(args)),
-         ...);
-    }
-
-    /**
-     * @brief Constructor with fill value
-     *
-     * @param fill_value Value to fill the vector with
-     */
-    template <class T>
-        requires(std::is_convertible_v<T, ItemType>)
-    constexpr explicit vec(const T& fill_value) {
-        for (size_t i = 0; i < length; i++) {
-            data[i] = fill_value;
-        }
-    }
-
-    /**
-     * @brief Copy constructor
-     *
-     * @param other Vector to copy from
-     */
-    constexpr vec(const vec<_Tp, _length>& other) {
-        for (size_t i = 0; i < _length; i++) {
-            data[i] = other[i];
-        }
-    }
-
-    /**
      * @brief Copy assignment operator
      *
      * @param o Vector to copy from
@@ -289,17 +404,6 @@ class vec {
             data[i] = o[i];
         }
         return *this;
-    }
-
-    /**
-     * @brief Move constructor
-     *
-     * @param o Vector to move from
-     */
-    constexpr vec(vec<_Tp, _length>&& o) {
-        for (size_t i = 0; i < _length; i++) {
-            data[i] = o[i];
-        }
     }
 
     /**
@@ -327,7 +431,20 @@ class vec {
         return *(vec<_Tp, __length>*)(data);
     }
 
-    /**
+    template <size_t... idx, class... _Ss>
+        requires(sizeof...(_Ss) < dim)
+    constexpr SubVec<sizeof...(idx), (_Ss::length, ...)> operator()(
+        Slice<idx...>, _Ss... ns) {
+        return {(data[idx](ns...))...};
+    }
+
+    template <size_t... idx>
+    constexpr vec<ItemType, sizeof...(idx)> operator()(Slice<idx...> s) {
+        return {data[idx]...};
+    }
+    // constexpr Self<ItemType> operator()(bool) { return *this; }
+
+    /**--vb
      * @brief Slice the vector starting at specified position (non-const
      * version)
      *
@@ -442,10 +559,13 @@ class vec {
     }
 
     /**
-     * @brief Compute cross product with another vector
-     *
-     * @param other Vector to compute cross product with
-     * @return Resulting vector
+     * @brief Compute 3D cross product
+     * @param other Right-hand operand vector
+     * @return vec<_Tp,3> Resulting perpendicular vector
+     * @requires _length == 3 (enabled via SFINAE)
+     * @note Implements the right-hand rule: cross(a, b) = |i j k|
+     *                                               |aₓ aᵧ a_z|
+     *                                               |bₓ bᵧ b_z|
      */
     constexpr vec<_Tp, _length> cross(const vec<_Tp, _length>& other) const {
         vec<_Tp, _length> res;
@@ -456,10 +576,10 @@ class vec {
     }
 
     /**
-     * @brief Compute dot product with another vector
-     *
-     * @param other Vector to compute dot product with
-     * @return Resulting value
+     * @brief Compute Euclidean inner product
+     * @param other Right-hand operand vector
+     * @return _Tp Scalar result of Σ(a_i * b_i)
+     * @note For vectors u, v: u·v = |u||v|cosθ
      */
     constexpr _Tp dot(const vec<_Tp, _length>& other) const {
         _Tp res = _Tp{};
@@ -470,9 +590,10 @@ class vec {
     }
 
     /**
-     * @brief Normalize the vector
-     *
-     * @return Normalized vector
+     * @brief Create unit vector in same direction
+     * @return vec<_Tp,_length> Scaled vector with magnitude 1
+     * @throws std::domain_error if modulus is zero
+     * @note Normalization formula: û = u / ||u||
      */
     constexpr vec<_Tp, _length> normalize() const {
         vec<_Tp, _length> res;
@@ -498,9 +619,9 @@ class vec {
     }
 
     /**
-     * @brief Compute modulus of the vector
-     *
-     * @return Modulus value
+     * @brief Calculate Euclidean norm (magnitude)
+     * @return _Tp ||v|| = √(Σv_i²)
+     * @note Directly computes sqrt(dot(*this))
      */
     constexpr _Tp mod() const {
         _Tp res = _Tp{};
@@ -570,9 +691,11 @@ class vec {
     }
 
     /**
-     * @brief Check if all elements satisfy a condition (alias for every())
-     *
-     * @return True if all elements satisfy the condition, false otherwise
+     * @brief Check universal quantification of components
+     * @return bool True if all elements evaluate to true
+     * @requires DataType must be contextually convertible to bool
+     * @note This is an alias for every()
+     * @see every()
      */
     constexpr inline bool all() const
         requires(std::is_convertible_v<DataType, bool>)
@@ -590,9 +713,9 @@ class vec {
     }
 
     /**
-     * @brief Unary negation operator
-     *
-     * @return Negated vector
+     * @brief Component-wise additive inverse
+     * @return vec<decltype(-_Tp{}),_length> New vector with -v_i components
+     * @note Equivalent to vector scaling by -1
      */
     auto operator-() const {
         Self<decltype(-data[0])> res;
@@ -665,6 +788,13 @@ class vec {
         return *this;
     }
 
+/**
+ * @def __VEC_OP_VEC_ON_EQ_LENGTH
+ * @brief Macro generating component-wise vector operations
+ * @param op Operator to apply (+, -, *, /, etc.)
+ * @note Requires both vectors to have same dimensionality.
+ *       Creates new vector with operator applied to each component pair.
+ */
 #define __VEC_OP_VEC_ON_EQ_LENGTH(op)          \
     template <class _OTp>                      \
         requires(dim == VecInfo<_OTp>::dim)    \
@@ -691,6 +821,13 @@ class vec {
     __VEC_OP_VEC_ON_EQ_LENGTH(<=)
 #undef __VEC_OP_VEC_ON_EQ_LENGTH
 
+/**
+ * @def __VEC_OP_ITEM_ON_OP_ABLE
+ * @brief Macro generating vector-scalar operations
+ * @param op Operator to apply (+, -, *, /, etc.)
+ * @note Applies operator to each component with scalar
+ *       Allows mixed-type operations through decltype deduction
+ */
 #define __VEC_OP_ITEM_ON_OP_ABLE(op)                                       \
     template <class _OTp>                                                  \
         requires(VecInfo<_OTp>::dim == 0 || dim == VecInfo<_OTp>::dim + 1) \
@@ -735,13 +872,10 @@ __ITEM_OP_VEC_ON_OP_ENABLE(/)
 __ITEM_OP_VEC_ON_OP_ENABLE(%)
 __ITEM_OP_VEC_ON_OP_ENABLE(&)
 __ITEM_OP_VEC_ON_OP_ENABLE(|)
-__ITEM_OP_VEC_ON_OP_ENABLE(^)
-__ITEM_OP_VEC_ON_OP_ENABLE(==)
-__ITEM_OP_VEC_ON_OP_ENABLE(!=)
-__ITEM_OP_VEC_ON_OP_ENABLE(>)
-__ITEM_OP_VEC_ON_OP_ENABLE(<)
-__ITEM_OP_VEC_ON_OP_ENABLE(>=)
-__ITEM_OP_VEC_ON_OP_ENABLE(<=)
+__ITEM_OP_VEC_ON_OP_ENABLE(^) __ITEM_OP_VEC_ON_OP_ENABLE(==)
+    __ITEM_OP_VEC_ON_OP_ENABLE(!=) __ITEM_OP_VEC_ON_OP_ENABLE(>)
+        __ITEM_OP_VEC_ON_OP_ENABLE(<) __ITEM_OP_VEC_ON_OP_ENABLE(>=)
+            __ITEM_OP_VEC_ON_OP_ENABLE(<=)
 #undef __ITEM_OP_VEC_ON_OP_ENABLE
 }  // namespace xcmath
 #endif  // VEC_H

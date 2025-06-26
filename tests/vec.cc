@@ -1,3 +1,4 @@
+//
 #include "mobject/vec.hpp"
 
 #include <gtest/gtest.h>
@@ -6,6 +7,33 @@
 #include <xcmath.hpp>
 
 #include "gtest/gtest.h"
+
+TEST(Method, operatorSlice) {
+    using namespace xcmath;
+
+    vec3f v3f({1, 2, 3});
+    vec3<vec3f> v33f({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}});
+    auto s = xcmath::slice_from_to<0, 4, 2>;
+    auto s2 = xcmath::slice_start_len<1, 4>;
+    auto s3 = xcmath::slice_start_len<0, 4, 3>;
+
+    auto qq = v33f(xcmath::slice_from_to<0, 1>, xcmath::slice_from_to<0, 1>);
+    EXPECT_FLOAT_EQ(qq[0][0], 1);
+    EXPECT_FLOAT_EQ(qq[0][1], 2);
+    EXPECT_FLOAT_EQ(qq[1][0], 4);
+    EXPECT_FLOAT_EQ(qq[1][1], 5);
+    auto qq2 = v33f(xcmath::slice_from_to<1, 2>, xcmath::slice_from_to<1, 2>);
+    EXPECT_FLOAT_EQ(qq2[0][0], 5);
+    EXPECT_FLOAT_EQ(qq2[0][1], 6);
+    EXPECT_FLOAT_EQ(qq2[1][0], 8);
+    EXPECT_FLOAT_EQ(qq2[1][1], 9);
+}
+TEST(Method, Constructor_with_init) {
+    using namespace xcmath;
+
+    vec3f v3f({1, 2, 3});
+    vec3<vec3f>({{1, 2, 3}, {1, 2, 3}, {1, 2, 3}});
+}
 
 // Property tests
 TEST(Property, DataType) {
