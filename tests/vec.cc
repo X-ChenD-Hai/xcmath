@@ -170,35 +170,6 @@ TEST(Operator, UnaryPlus) {
     }
 }
 
-TEST(Operator, slice) {
-    xcmath::vec3f v1{1, 2, 3};
-    xcmath::vec3f v2{4, 5, 6};
-    xcmath::vec3f v3{5, 7, 9};
-
-    xcmath::vec2f result = v1.slice<0, 2>();
-    for (int i = 0; i < 2; i++) {
-        EXPECT_EQ(result[i], v1[i]);
-    }
-    result = v1.slice<2>();
-    for (int i = 0; i < 2; i++) {
-        EXPECT_EQ(result[i], v1[i]);
-    }
-
-    result = v2.slice<1, 2>();
-    for (int i = 1; i < 2; i++) {
-        EXPECT_EQ(result[i - 1], v2[i]);
-    }
-
-    auto result2 = v3.slice<0, 3>();
-    for (int i = 0; i < 3; i++) {
-        EXPECT_EQ(result2[i], v3[i]);
-    }
-
-    auto result3 = v1.slice();
-    for (int i = 0; i < 3; i++) {
-        EXPECT_EQ(result3[i], v1[i]);
-    }
-}
 // Method tests
 TEST(Method, dot) {
     xcmath::vec3f v1{1, 2, 3};

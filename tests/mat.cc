@@ -2,6 +2,29 @@
 
 #include <xcmath.hpp>
 
+TEST(Method, construct_with_vec) {
+    xcmath::batch<float, 3, 3> v1{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    xcmath::mat3f m1{v1};
+    EXPECT_EQ(m1[0][0], 1.0f);
+    EXPECT_EQ(m1[0][1], 2.0f);
+    EXPECT_EQ(m1[0][2], 3.0f);
+    EXPECT_EQ(m1[1][0], 4.0f);
+    EXPECT_EQ(m1[1][1], 5.0f);
+    EXPECT_EQ(m1[1][2], 6.0f);
+    EXPECT_EQ(m1[2][0], 7.0f);
+    EXPECT_EQ(m1[2][1], 8.0f);
+    EXPECT_EQ(m1[2][2], 9.0f);
+    m1 = v1;
+    EXPECT_EQ(m1[0][0], 1.0f);
+    EXPECT_EQ(m1[0][1], 2.0f);
+    EXPECT_EQ(m1[0][2], 3.0f);
+    EXPECT_EQ(m1[1][0], 4.0f);
+    EXPECT_EQ(m1[1][1], 5.0f);
+    EXPECT_EQ(m1[1][2], 6.0f);
+    EXPECT_EQ(m1[2][0], 7.0f);
+    EXPECT_EQ(m1[2][1], 8.0f);
+    EXPECT_EQ(m1[2][2], 9.0f);
+}
 TEST(Method, det__1x1) {
     xcmath::mat<float, 1, 1> mat1x1;
     mat1x1[0][0] = 5.0f;

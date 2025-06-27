@@ -9,3 +9,5 @@
 !resources/
 !vcpkg.json
 !CMakePresets.json
+!Doxyfile
+docs/doxygen

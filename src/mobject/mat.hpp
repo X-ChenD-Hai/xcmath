@@ -64,6 +64,9 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
     template <class _T>
     using Self = mat<_T, _rows, _cols>;
 
+    mat<_Tp, _rows, _cols>(const vec<vec<_Tp, _cols>, _rows>& o)
+        : vec<vec<_Tp, _cols>, _rows>(o) {}
+
     /**
      * @brief Matrix multiplication operator
      *

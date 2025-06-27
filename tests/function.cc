@@ -20,10 +20,9 @@ TEST(Function, Rotate) {
     // 测试 2D 旋转矩阵
     xcmath::mat<float, 3, 3> m = xcmath::mat<float, 3, 3>::eye();
     xcmath::mat<float, 3, 3> rotated = xcmath::rotate(m, 90.0f);
-    xcmath::mat<float, 3, 3> expected{
-        xcmath::vec3<float>{cos(xcmath::radians(90.f)), -1.0f, 0.0f},
-        xcmath::vec3<float>{1.0f, cos(xcmath::radians(90.0f)), 0.0f},
-        xcmath::vec3<float>{0.0f, 0.0f, 1.0f}};
+    xcmath::mat<float, 3, 3> expected{{cos(xcmath::radians(90.f)), -1.0f, 0.0f},
+                                      {1.0f, cos(xcmath::radians(90.0f)), 0.0f},
+                                      {0.0f, 0.0f, 1.0f}};
     for (size_t i = 0; i < 3; ++i) {
         for (size_t j = 0; j < 3; ++j) {
             EXPECT_FLOAT_EQ(rotated[i][j], expected[i][j]);
@@ -35,10 +34,10 @@ TEST(Function, Rotate) {
     xcmath::vec3<float> axis(0.0f, 0.0f, 1.0f);
     xcmath::mat<float, 4, 4> rotated3d = xcmath::rotate(m3d, 90.0f, axis);
     xcmath::mat<float, 4, 4> expected3d{
-        xcmath::vec4<float>{cos(xcmath::radians(90.0f)), -1.0f, 0.0f, 0.0f},
-        xcmath::vec4<float>{1.0f, cos(xcmath::radians(90.0f)), 0.0f, 0.0f},
-        xcmath::vec4<float>{0.0f, 0.0f, 1.0f, 0.0f},
-        xcmath::vec4<float>{0.0f, 0.0f, 0.0f, 1.0f}};
+        {cos(xcmath::radians(90.0f)), -1.0f, 0.0f, 0.0f},
+        {1.0f, cos(xcmath::radians(90.0f)), 0.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f, 0.0f},
+        {0.0f, 0.0f, 0.0f, 1.0f}};
     for (size_t i = 0; i < 4; ++i) {
         for (size_t j = 0; j < 4; ++j) {
             EXPECT_FLOAT_EQ(rotated3d[i][j], expected3d[i][j]);
@@ -50,13 +49,23 @@ TEST(Function, Translate) {
     xcmath::mat<float, 4, 4> m = xcmath::mat<float, 4, 4>::eye();
     xcmath::vec3<float> v(1.0f, 2.0f, 3.0f);
     xcmath::mat<float, 4, 4> translated = xcmath::translate(m, v);
-    xcmath::mat<float, 4, 4> expected{
-        xcmath::vec4<float>{1.0f, 0.0f, 0.0f, 1.0f},
-        xcmath::vec4<float>{0.0f, 1.0f, 0.0f, 2.0f},
-        xcmath::vec4<float>{0.0f, 0.0f, 1.0f, 3.0f},
-        xcmath::vec4<float>{0.0f, 0.0f, 0.0f, 1.0f}};
+    xcmath::mat<float, 4, 4> expected{{1, 0, 0, 1},  //
+                                      {0, 1, 0, 2},
+                                      {0, 0, 1, 3},
+                                      {0, 0, 0, 1}};
     for (size_t i = 0; i < 4; ++i) {
         for (size_t j = 0; j < 4; ++j) {
+            EXPECT_FLOAT_EQ(translated[i][j], expected[i][j]);
+        }
+    }
+    auto m1 = xcmath::mat3f::eye();
+    const xcmath::vec3f v1(1.0f, 2.0f);
+    auto translated1 = xcmath::translate(m, v);
+    xcmath::mat3f expected1{{1, 0, 1},  //
+                            {0, 1, 2},
+                            {0, 0, 1}};
+    for (size_t i = 0; i < 3; ++i) {
+        for (size_t j = 0; j < 3; ++j) {
             EXPECT_FLOAT_EQ(translated[i][j], expected[i][j]);
         }
     }
@@ -66,11 +75,10 @@ TEST(Function, Scale) {
     xcmath::mat<float, 4, 4> m = xcmath::mat<float, 4, 4>::eye();
     xcmath::vec3<float> v(2.0f, 3.0f, 4.0f);
     xcmath::mat<float, 4, 4> scaled = xcmath::scale(m, v);
-    xcmath::mat<float, 4, 4> expected{
-        xcmath::vec4<float>{2.0f, 0.0f, 0.0f, 0.0f},
-        xcmath::vec4<float>{0.0f, 3.0f, 0.0f, 0.0f},
-        xcmath::vec4<float>{0.0f, 0.0f, 4.0f, 0.0f},
-        xcmath::vec4<float>{0.0f, 0.0f, 0.0f, 1.0f}};
+    xcmath::mat<float, 4, 4> expected{{2, 0, 0, 0},  //
+                                      {0, 3, 0, 0},
+                                      {0, 0, 4, 0},
+                                      {0, 0, 0, 1}};
     for (size_t i = 0; i < 4; ++i) {
         for (size_t j = 0; j < 4; ++j) {
             EXPECT_FLOAT_EQ(scaled[i][j], expected[i][j]);

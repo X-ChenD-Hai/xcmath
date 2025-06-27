@@ -115,19 +115,19 @@ mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _ATp angle, _Tp x,
  * @brief Apply translation for matrix
  *
  * @tparam _Tp Type of elements
- * @tparam _dim Dimension of the matrix (3 or 4)
+ * @tparam _len Dimension of the matrix (3 or 4)
  * @param m Input matrix to apply translation
  * @param v Translation vector
  * @return Translated matrix
  */
-template <class _Tp, size_t _dim = 4>
-    requires(_dim == 4 || _dim == 3)
-constexpr mat<_Tp, _dim, _dim> translate(const mat<_Tp, _dim, _dim>& m,
-                                         const vec<_Tp, _dim - 1>& v) {
+template <class _Tp, size_t _len = 4>
+    requires(_len == 4 || _len == 3)
+constexpr mat<_Tp, _len, _len> translate(const mat<_Tp, _len, _len>& m,
+                                         const vec<_Tp, _len - 1>& v) {
     auto res = m;
-    res[0][_dim - 1] += v[0];
-    res[1][_dim - 1] += v[1];
-    if constexpr (_dim == 4) res[2][_dim - 1] += v[2];
+    res[0][_len - 1] += v[0];
+    res[1][_len - 1] += v[1];
+    if constexpr (_len == 4) res[2][_len - 1] += v[2];
     return res;
 }
 
@@ -135,16 +135,16 @@ constexpr mat<_Tp, _dim, _dim> translate(const mat<_Tp, _dim, _dim>& m,
  * @brief Apply translation for matrix using a homogenous vector
  *
  * @tparam _Tp Type of elements
- * @tparam _dim Dimension of the matrix (3 or 4)
+ * @tparam _len Dimension of the matrix (3 or 4)
  * @param m Input matrix to apply translation
  * @param v Translation vector
  * @return Translated matrix
  */
-template <class _Tp, size_t _dim = 4>
-    requires(_dim == 4 || _dim == 3)
-constexpr mat<_Tp, _dim, _dim> translate(const mat<_Tp, _dim, _dim>& m,
-                                         const vec<_Tp, _dim>& v) {
-    return translate(m, v.template slice<_dim - 1>());
+template <class _Tp, size_t _len = 4>
+    requires(_len == 4 || _len == 3)
+constexpr mat<_Tp, _len, _len> translate(const mat<_Tp, _len, _len>& m,
+                                         const vec<_Tp, _len>& v) {
+    return translate(m, v(slice_to<_len - 1>));
 }
 
 /**

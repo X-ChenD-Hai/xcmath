@@ -48,7 +48,7 @@ class vec;
 /**
  * @brief Type requirement concept for vector types
  * @tparam T Type to validate as a vector
- * @requires - Must have nested DataType and ItemType typedefs
+ * @note - Must have nested DataType and ItemType typedefs
  *          - Must have static dimension and length constants
  *          - Must support element access via operator[]
  */
@@ -68,7 +68,8 @@ concept Vec = requires(T a) {
  * @brief Concept for valid vector component types
  * @tparam vec Vector type to check
  * @tparam _Item Candidate component type
- * @requires - vec must satisfy Vec concept
+ * Notw:
+ * - vec must satisfy Vec concept
  *          - _Item must be convertible to vector's ItemType
  */
 template <class vec, class _Item>
@@ -85,7 +86,11 @@ concept VecItem = requires {
 template <class Arg, class... Args>
 constexpr size_t VecConstructPackSize =
     VecConstructPackSize<Arg> + VecConstructPackSize<Args...>;
-
+/**
+ * @brief Metafunction computing total size of vector constructor arguments
+ *
+ * @tparam Arg
+ */
 template <class Arg>
 inline constexpr size_t VecConstructPackSize<Arg> = []() -> size_t {
     if constexpr (Vec<Arg>)
@@ -93,33 +98,13 @@ inline constexpr size_t VecConstructPackSize<Arg> = []() -> size_t {
     else
         return 1;
 }();
-
 /**
- * @brief Compile-time index sequence for vector slicing operations
- * @tparam _idx Parameter pack of indices defining the slice
- * @note Used to create view-like slices of vectors without copying data
+ * @brief
+ *
+ * @tparam _Tp
+ *
+ *
  */
-template <size_t... _idx>
-struct Slice {
-    static constexpr size_t length =
-        sizeof...(_idx);  ///< Number of elements in slice
-};
-
-template <size_t _From, size_t _To, size_t _Step = 1>
-static constexpr auto slice_from_to = []() {
-    return [&]<size_t... _Pack>(this auto&& self) {
-        if constexpr (_Step * sizeof...(_Pack) < _To - _From + 1)
-            return self.template
-            operator()<_Pack..., _From + _Step * sizeof...(_Pack)>();
-        else
-            return Slice<_Pack...>();
-    }();
-}();
-
-template <size_t _Start, size_t _Len, size_t _Step = 1>
-static constexpr auto slice_start_len =
-    slice_from_to<_Start, _Start + (_Step * _Len) - 1, _Step>;
-
 template <class _Tp>
 struct VecInfo {
 #ifdef _MSVC_VER
@@ -135,6 +120,7 @@ struct VecInfo {
     }();
     using DataType = decltype(Zero);
 #else
+
     static constexpr size_t dim = []() -> size_t {
         if constexpr (Vec<_Tp>) return VecInfo<typename _Tp::ItemType>::dim + 1;
         return 0;
@@ -164,22 +150,49 @@ struct VecInfo {
     template <class _Sl, class... _Sls>
     using SubVec = decltype(SubVecZero<_Sl, _Sls...>);
 };
-
+/**
+ * @brief Metaclassfor constructing a vector from a pack of arguments
+ * @tparam T Type of vector components
+ * @tparam len Length of the vector
+ * @tparam lens Lengths of sub-vectors (if any)
+ */
 template <class T, size_t len, size_t... lens>
 struct __batchHelper {
+    /**
+     * @brief Type of the vector constructed from the arguments
+     *
+     */
     using Type = vec<typename __batchHelper<T, lens...>::Type, len>;
 };
+/**
+ * @brief Metaclass for constructing a vector from a pack of arguments
+ *
+ * @tparam T Type of vector components
+ * @tparam len Length of the vector
+ */
 template <class T, size_t len>
 struct __batchHelper<T, len> {
+    /**
+     * @brief
+     *
+     */
     using Type = vec<T, len>;
 };
-template <class T, size_t len, size_t... lens>
-using batch = __batchHelper<T, len, lens...>::Type;
+
+/**
+ * @brief Metafunction for constructing a vector from a pack of arguments
+ *
+ * @tparam T
+ * @tparam lens
+ */
+template <class T, size_t... lens>
+using batch = __batchHelper<T, lens...>::Type;
 /**
  * @brief N-dimensional mathematical vector template
  * @tparam _Tp Arithmetic type of vector components
  * @tparam _length Dimension of the vector (1-4 for swizzle operations)
- * @requires _Tp must be default constructible and support basic arithmetic
+ * Notw:
+ * _Tp must be default constructible and support basic arithmetic
  * operations
  *
  * Provides:
@@ -254,7 +267,8 @@ class vec {
 
     /**
      * @brief Construct a zero-initialized vector
-     * @requires _Tp must be default constructible
+     * Notw:
+     * _Tp must be default constructible
      */
     constexpr vec()
         requires(std::is_default_constructible_v<_Tp>)
@@ -266,7 +280,8 @@ class vec {
      * @param args Remaining component values
      * @tparam _Tp1 Type of first component (must be convertible to _Tp)
      * @tparam _T Types of remaining components (must be convertible to _Tp)
-     * @requires All arguments must be convertible to component type _Tp
+     * Notw:
+     * All arguments must be convertible to component type _Tp
      * @throws std::out_of_range if too many arguments provided
      */
     template <class _Tp1, class... _T>
@@ -282,7 +297,8 @@ class vec {
      * @brief Construct from mixed scalars and vectors
      * @param args Component initializers (scalars or vectors to flatten)
      * @tparam _Args Variadic argument types
-     * @requires Total elements from args must exactly match vector length
+     * Notw:
+     * Total elements from args must exactly match vector length
      *           Each argument must be convertible to _Tp or be a vector of _Tp
      */
     template <typename... _Args>
@@ -407,67 +423,27 @@ class vec {
     }
 
     /**
-     * @brief Slice the vector starting at specified position
-     *
-     * @tparam _pos Starting position
-     * @tparam __length Length of the slice
-     * @return Sliced vector
+     * @brief qualified operator() for slicing and swizzling
+     * @tparam idx Indices of the elements to select (0-3 for swizzling, 0-n for
+     * slicing)
+     * @return Subvector or scalar value
      */
-    template <size_t _pos, size_t __length>
-        requires(_pos + __length <= _length)
-    const vec<_Tp, __length>& slice() const {
-        return *(vec<_Tp, __length>*)(data + _pos);
-    }
-
-    /**
-     * @brief Slice the vector from the beginning
-     *
-     * @tparam __length Length of the slice
-     * @return Sliced vector
-     */
-    template <size_t __length>
-        requires(__length <= _length)
-    const vec<_Tp, __length>& slice() const {
-        return *(vec<_Tp, __length>*)(data);
-    }
-
     template <size_t... idx, class... _Ss>
         requires(sizeof...(_Ss) < dim)
     constexpr SubVec<sizeof...(idx), (_Ss::length, ...)> operator()(
-        Slice<idx...>, _Ss... ns) {
+        Slice<idx...>, _Ss... ns) const {
         return {(data[idx](ns...))...};
     }
 
-    template <size_t... idx>
-    constexpr vec<ItemType, sizeof...(idx)> operator()(Slice<idx...> s) {
-        return {data[idx]...};
-    }
-    // constexpr Self<ItemType> operator()(bool) { return *this; }
-
-    /**--vb
-     * @brief Slice the vector starting at specified position (non-const
-     * version)
-     *
-     * @tparam _pos Starting position
-     * @tparam __length Length of the slice
-     * @return Sliced vector
-     */
-    template <size_t _pos, size_t __length>
-        requires(_pos + __length <= _length)
-    vec<_Tp, __length>& slice() {
-        return *(vec<_Tp, __length>*)(data + _pos);
-    }
-
     /**
-     * @brief Slice the vector from the beginning (non-const version)
-     *
-     * @tparam __length Length of the slice
-     * @return Sliced vector
+     * @brief qualified operator() for slicing and swizzling (const version)
+     * @tparam idx Indices of the elements to select (0-3 for swizzling, 0-n for
+     * slicing)
+     * @return Subvector or scalar value
      */
-    template <size_t __length = _length>
-        requires(__length <= _length)
-    vec<_Tp, __length>& slice() {
-        return *(vec<_Tp, __length>*)(data);
+    template <size_t... idx>
+    constexpr vec<ItemType, sizeof...(idx)> operator()(Slice<idx...> s) const {
+        return {data[idx]...};
     }
 
     /**
@@ -562,7 +538,8 @@ class vec {
      * @brief Compute 3D cross product
      * @param other Right-hand operand vector
      * @return vec<_Tp,3> Resulting perpendicular vector
-     * @requires _length == 3 (enabled via SFINAE)
+     * Notw:
+     * _length == 3 (enabled via SFINAE)
      * @note Implements the right-hand rule: cross(a, b) = |i j k|
      *                                               |aₓ aᵧ a_z|
      *                                               |bₓ bᵧ b_z|
@@ -693,7 +670,8 @@ class vec {
     /**
      * @brief Check universal quantification of components
      * @return bool True if all elements evaluate to true
-     * @requires DataType must be contextually convertible to bool
+     * Notw:
+     * DataType must be contextually convertible to bool
      * @note This is an alias for every()
      * @see every()
      */

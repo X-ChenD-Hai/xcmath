@@ -13,6 +13,46 @@
 #include <type_traits>
 
 namespace xcmath {
+
+/**
+ * @brief Compile-time index sequence for vector slicing operations
+ * @tparam _idx Parameter pack of indices defining the slice
+ * @note Used to create view-like slices of vectors without copying data
+ */
+template <size_t... _idx>
+struct Slice {
+    static constexpr size_t length =
+        sizeof...(_idx);  ///< Number of elements in slice
+};
+
+template <size_t _From, size_t _To, size_t _Step = 1>
+constexpr auto slice_from_to = []() {
+    if constexpr (_From <= _To)
+        return [&]<size_t... _Pack>(this auto&& self) {
+            if constexpr (_Step * sizeof...(_Pack) < _To - _From + 1)
+                return self.template
+                operator()<_Pack..., _From + _Step * sizeof...(_Pack)>();
+            else
+                return Slice<_Pack...>();
+        }();
+    else
+        return [&]<size_t... _Pack>(this auto&& self) {
+            if constexpr (_Step * sizeof...(_Pack) < _From - _To + 1)
+                return self.template
+                operator()<_Pack..., _From - _Step * sizeof...(_Pack)>();
+            else
+                return Slice<_Pack...>();
+        }();
+}();
+template <size_t _Start, size_t _Len, size_t _Step = 1>
+constexpr auto slice_start_len =
+    slice_from_to<_Start, _Start + (_Step * _Len) - 1, _Step>;
+template <size_t _Len, size_t _Step = 1>
+constexpr auto slice_to = slice_from_to<0, (_Step * _Len) - 1, _Step>;
+template <size_t _End, size_t _Len, size_t _Step = 1>
+constexpr auto slice_from_end =
+    slice_from_to<_End - (_Len * _Step) + 1, _End, _Step>;
+
 /**
  * @brief Vector class template
  *
