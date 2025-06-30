@@ -20,8 +20,8 @@ TEST(Function, Rotate) {
     // 测试 2D 旋转矩阵
     xcmath::mat<float, 3, 3> m = xcmath::mat<float, 3, 3>::eye();
     xcmath::mat<float, 3, 3> rotated = xcmath::rotate(m, 90.0f);
-    xcmath::mat<float, 3, 3> expected{{cos(xcmath::radians(90.f)), -1.0f, 0.0f},
-                                      {1.0f, cos(xcmath::radians(90.0f)), 0.0f},
+    xcmath::mat<float, 3, 3> expected{{(float)cos(xcmath::radians(90.f)), -1.0f, 0.0f},
+                                      {1.0f, (float)cos(xcmath::radians(90.0f)), 0.0f},
                                       {0.0f, 0.0f, 1.0f}};
     for (size_t i = 0; i < 3; ++i) {
         for (size_t j = 0; j < 3; ++j) {
@@ -34,8 +34,8 @@ TEST(Function, Rotate) {
     xcmath::vec3<float> axis(0.0f, 0.0f, 1.0f);
     xcmath::mat<float, 4, 4> rotated3d = xcmath::rotate(m3d, 90.0f, axis);
     xcmath::mat<float, 4, 4> expected3d{
-        {cos(xcmath::radians(90.0f)), -1.0f, 0.0f, 0.0f},
-        {1.0f, cos(xcmath::radians(90.0f)), 0.0f, 0.0f},
+        {(float)cos(xcmath::radians(90.0f)), -1.0f, 0.0f, 0.0f},
+        {1.0f, (float)cos(xcmath::radians(90.0f)), 0.0f, 0.0f},
         {0.0f, 0.0f, 1.0f, 0.0f},
         {0.0f, 0.0f, 0.0f, 1.0f}};
     for (size_t i = 0; i < 4; ++i) {
