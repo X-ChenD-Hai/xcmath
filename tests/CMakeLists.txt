@@ -29,4 +29,4 @@ add_test(NAME function COMMAND test_function)
 add_test(NAME quaternion COMMAND test_quaternion)
 add_test(NAME symbol_system COMMAND test_symbol)
 
-
+add_subdirectory(compute)
