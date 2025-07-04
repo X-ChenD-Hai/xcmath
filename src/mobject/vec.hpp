@@ -157,12 +157,12 @@ struct VecInfo {
  * @tparam lens Lengths of sub-vectors (if any)
  */
 template <class T, size_t len, size_t... lens>
-struct __batchHelper {
+struct __tensorHelper {
     /**
      * @brief Type of the vector constructed from the arguments
      *
      */
-    using Type = vec<typename __batchHelper<T, lens...>::Type, len>;
+    using Type = vec<typename __tensorHelper<T, lens...>::Type, len>;
 };
 /**
  * @brief Metaclass for constructing a vector from a pack of arguments
@@ -171,7 +171,7 @@ struct __batchHelper {
  * @tparam len Length of the vector
  */
 template <class T, size_t len>
-struct __batchHelper<T, len> {
+struct __tensorHelper<T, len> {
     /**
      * @brief
      *
@@ -186,7 +186,7 @@ struct __batchHelper<T, len> {
  * @tparam lens
  */
 template <class T, size_t... lens>
-using batch = __batchHelper<T, lens...>::Type;
+using tensor = __tensorHelper<T, lens...>::Type;
 /**
  * @brief N-dimensional mathematical vector template
  * @tparam _Tp Arithmetic type of vector components

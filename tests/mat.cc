@@ -3,7 +3,7 @@
 #include <xcmath.hpp>
 
 TEST(Method, construct_with_vec) {
-    xcmath::batch<float, 3, 3> v1{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
+    xcmath::tensor<float, 3, 3> v1{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
     xcmath::mat3f m1{v1};
     EXPECT_EQ(m1[0][0], 1.0f);
     EXPECT_EQ(m1[0][1], 2.0f);
