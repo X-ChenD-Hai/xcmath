@@ -1,30 +1,13 @@
 
 #include <gtest/gtest.h>
 
-#include <compute/utils/allocator.hpp>
-#include <compute/utils/device.hpp>
-#include <compute/utils/heapdevice.hpp>
+// #include <compute/utils/allocator.hpp>
+// #include <compute/utils/device.hpp>
+// #include <compute/utils/heapdevice.hpp>
+#include <compute/utils/tvector.hpp>
 #include <cstddef>
-using namespace xcmath::comp;
-class HeapPoolDevice {
-   public:
-    constexpr static const size_t access_grade = 0;
-    constexpr static const bool access_by_pointer = 1;
-    constexpr static const bool allow_destruct = 1;
-    constexpr static const bool random_visits = 1;
-    constexpr static const bool sequential_visits = 0;
-
-   private:
-   public:
-    struct Block {
-        void* ptr;
-        size_t size;
-    };
-    struct mem_id_t {
-        HeapPoolDevice* pool;
-        size_t offset;
-    };
-};
+// using namespace xcmath::comp;
+using namespace xc;
 
 class CustomType1 {
     std::string s;
@@ -61,9 +44,69 @@ class CustomType {
                   << std::endl;
     }
 };
-TEST(MemoryPool, Basic) {
-    auto pool = Allocator<CustomType, 1, HeapPoolDevice>();
-    for (int i = 0; i < pool.size; i++) {
-        // pool[i] = CustomType("test" + std::to_string(i));
+TEST(MemoryPool, Basic) {}
+
+namespace DeviceTags {
+class Singleton;
+class RandomAccess;
+class SequentialAccess;
+class AllowNonTrivialVariables;
+}  // namespace DeviceTags
+
+template <class _Device>
+concept CDevice = requires(_Device* device) {
+    TVector<typename _Device::device_tags>;
+    typename _Device::memory_id_t;
+    {
+        device->allocate(std::declval<size_t>())
+    } -> std::same_as<typename _Device::memory_id_t>;
+    device->deallocate(std::declval<typename _Device::memory_id_t>());
+};
+
+template <class _DTp, size_t _Count, CDevice _Device>
+class MetaAllocator {
+    template <class, size_t, CDevice, bool>
+    friend class Allocator;
+
+   private:
+    _Device::memory_id_t __memory_id{};
+    MetaAllocator(_Device::memory_id_t memory_id) : __memory_id(memory_id){};
+
+   public:
+    constexpr static size_t size = _Count;
+};
+template <class _DTp, size_t _Count, CDevice _Device,
+          bool T = _Device::device_tags::template has<DeviceTags::Singleton>>
+class Allocator;
+
+template <class _DTp, size_t _Count, CDevice _Device>
+class Allocator<_DTp, _Count, _Device, true>
+    : public MetaAllocator<_DTp, _Count, _Device> {
+    using MetaAllocator = MetaAllocator<_DTp, _Count, _Device>;
+
+   public:
+    Allocator() : MetaAllocator(_Device::allocate(sizeof(_DTp) * _Count)) {}
+};
+template <class _DTp, size_t _Count, CDevice _Device>
+class Allocator<_DTp, _Count, _Device, false>
+    : public MetaAllocator<_DTp, _Count, _Device> {
+   private:
+    using MetaAllocator = MetaAllocator<_DTp, _Count, _Device>;
+    _Device* __device{nullptr};
+
+   public:
+    constexpr static size_t size = _Count;
+    Allocator(_Device* device)
+        : MetaAllocator(device->allocate(sizeof(_DTp) * _Count)),
+          __device(device) {}
+};
+class HeapDevice {
+   public:
+    using device_tags = tvector<DeviceTags::Singleton>;
+    using memory_id_t = char*;
+    static memory_id_t allocate(size_t size) {
+        return static_cast<memory_id_t>(new char[size]);
     }
-}
+    static void deallocate(memory_id_t ptr) { delete[] ptr; }
+};
+TEST(Adapter, Basic) { Allocator<CustomType, 1, HeapDevice> alloc; }

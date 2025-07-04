@@ -126,13 +126,13 @@ class HeapDevice {
                         size_t offset = 0) {
         memcpy(static_cast<char*>(ptr) + offset, item, item_size);
     }
-    template <>
-    void copy<HeapDevice>(mem_id_t dst, mem_id_t src, size_t size,
-                          size_t offset) {
-        memcpy(static_cast<char*>(dst) + offset,
-               static_cast<char*>(src) + offset, size);
-    }
 };
+template <>
+inline void HeapDevice::copy<HeapDevice>(mem_id_t dst, mem_id_t src,
+                                         size_t size, size_t offset) {
+    memcpy(static_cast<char*>(dst) + offset, static_cast<char*>(src) + offset,
+           size);
+}
 
 }  // namespace xcmath::comp
 
