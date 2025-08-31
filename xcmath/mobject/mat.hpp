@@ -124,6 +124,33 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         return res;
     }
 
+    constexpr mat<_Tp, _cols, _rows> inv() const
+        requires(_rows == _cols)
+    {
+        const _Tp det = this->det();
+        mat<_Tp, _rows, _cols> adjugate;
+        for (size_t i = 0; i < _rows; ++i) {
+            for (size_t j = 0; j < _cols; ++j) {
+                // Compute the submatrix (minor)
+                mat<_Tp, _rows - 1, _cols - 1> submat;
+                size_t sub_i = 0;
+                for (size_t k = 0; k < _rows; ++k) {
+                    if (k == i) continue;
+                    size_t sub_j = 0;
+                    for (size_t l = 0; l < _cols; ++l) {
+                        if (l == j) continue;
+                        submat[sub_i][sub_j++] = this->data[k][l];
+                    }
+                    ++sub_i;
+                }
+                // Compute the cofactor (signed minor)
+                _Tp cofactor = ((i + j) % 2 == 0 ? 1 : -1) * submat.det();
+                adjugate[j][i] = cofactor;  // Transpose for adjugate
+            }
+        }
+        return adjugate / det;
+    }
+
     /**
      * @brief Create a matrix filled with ones
      *

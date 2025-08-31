@@ -1,6 +1,8 @@
 #include <gtest/gtest.h>
 
 #include <xcmath/xcmath.hpp>
+//
+#include <xcmath/utils/show.hpp>
 
 TEST(Method, construct_with_vec) {
     xcmath::batch<float, 3, 3> v1{{1, 2, 3}, {4, 5, 6}, {7, 8, 9}};
@@ -129,4 +131,30 @@ TEST(Method, nat_muti_vec) {
     // auto result2 = vec{12.0f, 39.0f};
     // EXPECT_TRUE((res == result).all());
     // EXPECT_FALSE((res == result2).all());
+}
+TEST(Method, inverse__2x2) {
+    using namespace xcmath;
+    xcmath::mat<float, 2, 2> mat1{{1.0f, 2.0f}, {3.0f, 4.0f}};
+    auto mat2 = mat1.inv();
+    EXPECT_FLOAT_EQ(mat2[0][0], -2.0f);
+    EXPECT_FLOAT_EQ(mat2[0][1], 1.f);
+    EXPECT_FLOAT_EQ(mat2[1][0], 1.5f);
+    EXPECT_FLOAT_EQ(mat2[1][1], -0.5f);
+    EXPECT_FLOAT_EQ(mat1.det(), 1.0f / mat2.det());
+}
+TEST(Method, inverse__3x3) {
+    using namespace xcmath;
+    xcmath::mat<float, 3, 3> mat1{
+        {1.0f, 2.0f, 3.0f}, {4.0f, 5.0f, 6.0f}, {7.0f, 8.0f, 8.0f}};
+    auto mat2 = mat1.inv();
+    EXPECT_FLOAT_EQ(mat2[0][0], -8.0f / 3.0f);
+    EXPECT_FLOAT_EQ(mat2[0][1], 8.0f / 3.0f);
+    EXPECT_FLOAT_EQ(mat2[0][2], -1.0f);
+    EXPECT_FLOAT_EQ(mat2[1][0], 10.0f / 3.0f);
+    EXPECT_FLOAT_EQ(mat2[1][1], -13.0f / 3.0f);
+    EXPECT_FLOAT_EQ(mat2[1][2], 2.0f);
+    EXPECT_FLOAT_EQ(mat2[2][0], -1.0f);
+    EXPECT_FLOAT_EQ(mat2[2][1], 2.0f);
+    EXPECT_FLOAT_EQ(mat2[2][2], -1.0f);
+    EXPECT_NEAR(mat1.det(), 1.0f / mat2.det(), 1e-5);
 }
