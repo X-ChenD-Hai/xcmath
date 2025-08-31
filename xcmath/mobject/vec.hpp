@@ -534,6 +534,77 @@ class vec {
         return this->data[3];
     }
 
+    constexpr const vec<_Tp, 2>& xy() const
+        requires(_length < 5 && _length > 1)
+    {
+        return *reinterpret_cast<const vec<_Tp, 2>*>(data);
+    }
+    constexpr vec<_Tp, 2>& xy()
+        requires(_length < 5 && _length > 1)
+    {
+        return *reinterpret_cast<vec<_Tp, 2>*>(data);
+    }
+
+    constexpr const vec<_Tp, 2>& yz() const
+        requires(_length < 5 && _length > 2)
+    {
+        return *reinterpret_cast<const vec<_Tp, 2>*>(data + 1);
+    }
+    constexpr vec<_Tp, 2>& yz()
+        requires(_length < 5 && _length > 2)
+    {
+        return *reinterpret_cast<vec<_Tp, 2>*>(data + 1);
+    }
+
+    constexpr const vec<_Tp, 2>& zw() const
+        requires(_length < 5 && _length > 3)
+    {
+        return *reinterpret_cast<const vec<_Tp, 2>*>(data + 2);
+    }
+    constexpr vec<_Tp, 2>& zw()
+        requires(_length < 5 && _length > 3)
+    {
+        return *reinterpret_cast<vec<_Tp, 2>*>(data + 2);
+    }
+
+    constexpr const vec<_Tp, 3>& xyz() const
+        requires(_length < 5 && _length > 2)
+    {
+        return *reinterpret_cast<const vec<_Tp, 3>*>(data);
+    }
+    constexpr vec<_Tp, 3>& xyz()
+        requires(_length < 5 && _length > 2)
+    {
+        return *reinterpret_cast<vec<_Tp, 3>*>(data);
+    }
+    constexpr const vec<_Tp, 3>& yzw() const
+        requires(_length < 5 && _length > 2)
+    {
+        return *reinterpret_cast<const vec<_Tp, 3>*>(data + 1);
+    }
+    constexpr vec<_Tp, 3>& yzw()
+        requires(_length < 5 && _length > 2)
+    {
+        return *reinterpret_cast<vec<_Tp, 3>*>(data + 1);
+    }
+
+    constexpr vec<_Tp, 2> xz() const
+        requires(_length < 5 && _length > 2)
+    {
+        return {data[0], data[2]};
+    }
+    constexpr vec<_Tp, 2> xw() const
+        requires(_length < 5 && _length > 3)
+    {
+        return {data[0], data[3]};
+    }
+    constexpr vec<_Tp, 2> yw() const
+        requires(_length < 5 && _length > 3)
+    {
+        return {data[1], data[3]};
+    }
+
+    
     /**
      * @brief Compute 3D cross product
      * @param other Right-hand operand vector

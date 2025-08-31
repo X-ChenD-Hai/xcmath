@@ -76,7 +76,7 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
      */
     template <size_t _ncols>
     constexpr mat<_Tp, _rows, _ncols> operator^(
-        const mat<_Tp, _cols, _ncols>& other) {
+        const mat<_Tp, _cols, _ncols>& other) const {
         mat<_Tp, _rows, _ncols> res;
         for (size_t i = 0; i < _rows; i++) {
             for (size_t j = 0; j < _ncols; j++) {
@@ -99,7 +99,7 @@ class mat : public vec<vec<_Tp, _cols>, _rows> {
         requires(_VTp::length == _rows) &&
                 concepts::Add<typename _VTp::DataType> &&
                 concepts::Muitiply<typename _VTp::DataType, _Tp>
-    constexpr _VTp operator^(const _VTp& other) {
+    constexpr _VTp operator^(const _VTp& other) const {
         _VTp res;
         for (size_t i = 0; i < _rows; i++) {
             for (size_t j = 0; j < _cols; j++) {
