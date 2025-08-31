@@ -2,7 +2,7 @@ set(math_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR})
 add_library(xcmath INTERFACE)
 message(STATUS "xcmath include dir: ${CMAKE_SOURCE_DIR}")
 target_include_directories(xcmath PUBLIC INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}>
 )
 add_library(xcmath::xcmath ALIAS xcmath)
