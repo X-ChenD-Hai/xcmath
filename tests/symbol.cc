@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include <symbolsystem/monomial.h>
-#include <symbolsystem/symbol.h>
+#include <xcmath/symbolsystem/monomial.h>
+#include <xcmath/symbolsystem/symbol.h>
 
 using namespace xcmath;
 using namespace std;

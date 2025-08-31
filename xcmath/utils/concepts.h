@@ -1,4 +1,5 @@
 // mathconcepts.h
+#pragma once
 #ifndef MATHCONCEPTS_H
 #define MATHCONCEPTS_H
 #include <concepts>

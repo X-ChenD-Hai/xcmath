@@ -7,7 +7,7 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 option(BUILD_TESTING "Build tests" ON)
 option(XCMATH_BUILD_SHARED_LIBS "Build dynamic library" OFF)
-add_subdirectory(src)
+add_subdirectory(xcmath)
 if(BUILD_TESTING)
     enable_testing()
     add_subdirectory(tests)
@@ -25,11 +25,11 @@ install(
 )
 install(
     DIRECTORY
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/mobject
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/utils
+    ${CMAKE_CURRENT_SOURCE_DIR}/xcmath/mobject
+    ${CMAKE_CURRENT_SOURCE_DIR}/xcmath/utils
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/xcmath
 )
 install(
-    FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/xcmath.hpp
+    FILES ${CMAKE_CURRENT_SOURCE_DIR}/xcmath/xcmath.hpp
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/xcmath
 )

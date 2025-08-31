@@ -5,7 +5,7 @@
  * @version 1.0
  * @date 2023-10-05
  */
-
+#pragma once
 #ifndef XCMATH_FUNCTION_HPP
 #define XCMATH_FUNCTION_HPP
 

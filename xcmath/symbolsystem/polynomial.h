@@ -1,3 +1,4 @@
+#pragma once
 #ifndef XCMATH_SYMBOLSYSTEM_POLYNOMIAL_H
 #define XCMATH_SYMBOLSYSTEM_POLYNOMIAL_H
 #include <vector>

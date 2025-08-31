@@ -1,3 +1,4 @@
+#pragma once
 #ifndef XCMATH_SYMBOLSYSTEM_FRACTION_H
 #define XCMATH_SYMBOLSYSTEM_FRACTION_H
 #include <vector>

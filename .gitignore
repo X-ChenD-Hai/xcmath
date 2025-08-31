@@ -1,6 +1,6 @@
 /*
 !/.gitignore
-!/src
+!/xcmath
 !/tests
 !/docs
 !/CMakeLists.txt

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef XCMATH_SYMBOLS_OPS_H
 #define XCMATH_SYMBOLS_OPS_H
 #include "../xcmathConfig.h"

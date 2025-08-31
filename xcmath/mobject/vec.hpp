@@ -13,7 +13,7 @@
  * - Cross/dot products and vector normalization
  * - Swizzling operations and slice views
  */
-
+#pragma once
 #ifndef VEC_H
 #define VEC_H
 

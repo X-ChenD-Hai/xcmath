@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <xcmath.hpp>
+#include <xcmath/xcmath.hpp>
 using namespace xcmath;
 TEST(Quaternion, Constructors) {
     // 测试标量构造函数

@@ -4,9 +4,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <iostream>
-#include <xcmath.hpp>
+#include <xcmath/xcmath.hpp>
 //
-#include <utils/show.hpp>
+#include <xcmath/utils/show.hpp>
 
 #include "gtest/gtest.h"
 

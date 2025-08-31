@@ -1,3 +1,4 @@
+#pragma once
 #ifndef XCMATH_TYPES_HPP
 #define XCMATH_TYPES_HPP
 #include <type_traits>
@@ -57,10 +58,6 @@ struct tvector {
                 }
             }
         }.template operator()<Ts...>())>::type;
-    };
-    template <>
-    struct remove_all_helper<> {
-        using Type = tvector<Ts...>;
     };
 
    public:

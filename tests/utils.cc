@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
-#include <utils/compiling.hpp>
-#include <utils/types.hpp>
+#include <xcmath/utils/compiling.hpp>
+#include <xcmath/utils/types.hpp>
 
 using namespace std;
 using namespace xcmath;

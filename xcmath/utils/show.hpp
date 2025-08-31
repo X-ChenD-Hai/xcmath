@@ -1,11 +1,11 @@
 // show.hpp
+#pragma once
 #ifndef SHOW_H
 #define SHOW_H
 #include <iostream>
 
 #include "../mobject/declaration.hpp"
 #include "./concepts.h"  // IWYU pragma: keep
-
 
 namespace xcmath {
 namespace concepts {

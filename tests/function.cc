@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 
-#include <xcmath.hpp>
+#include <xcmath/xcmath.hpp>
 
 using namespace xcmath;
 

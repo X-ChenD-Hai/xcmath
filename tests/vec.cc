@@ -1,10 +1,9 @@
+#include <xcmath/mobject/vec.hpp>
 //
-#include "mobject/vec.hpp"
-
 #include <gtest/gtest.h>
 
-#include <utils/show.hpp>
-#include <xcmath.hpp>
+#include <xcmath/utils/show.hpp>
+#include <xcmath/xcmath.hpp>
 
 #include "gtest/gtest.h"
 

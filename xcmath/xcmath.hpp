@@ -1,4 +1,5 @@
 // xcmath.hpp
+#pragma once
 #ifndef XCMATH_H
 #define XCMATH_H
 #include "./mobject/declaration.hpp"     // IWYU pragma: export

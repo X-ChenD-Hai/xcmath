@@ -1,3 +1,4 @@
+#pragma once
 #ifndef XCMATH_SYMBOLSYSTEM_SYMBOL_H
 #define XCMATH_SYMBOLSYSTEM_SYMBOL_H
 #include <string>

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef XCMATH_CONFIG_H
 #define XCMATH_CONFIG_H
 

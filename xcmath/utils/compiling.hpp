@@ -1,4 +1,5 @@
 // compiling.hpp
+#pragma once
 #ifndef COMPILING_H
 #define COMPILING_H
 #include <cstddef>

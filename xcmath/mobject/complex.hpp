@@ -1,4 +1,5 @@
 // complex.hpp
+#pragma once
 #ifndef XCMATH_COMPLEX_H
 #define XCMATH_COMPLEX_H
 #include <concepts>
