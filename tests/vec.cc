@@ -287,9 +287,12 @@ using namespace xcmath;
 using namespace std;
 TEST(operator, all) {
     vec3f v1{1, 2, 3};
+    const auto& v1f = v1;
     vec3d v2{1, 2, 3};
     vec3<vec3<vec3f>> v4{};
     v4 + 1.2;
+    v1 / 1.2f;
+    v1f / 1.2f;
     1.2 + v4;
     auto result = v1 + v2;
 }

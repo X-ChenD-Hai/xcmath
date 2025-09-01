@@ -604,7 +604,6 @@ class vec {
         return {data[1], data[3]};
     }
 
-    
     /**
      * @brief Compute 3D cross product
      * @param other Right-hand operand vector
@@ -844,15 +843,16 @@ class vec {
  * @note Requires both vectors to have same dimensionality.
  *       Creates new vector with operator applied to each component pair.
  */
-#define __VEC_OP_VEC_ON_EQ_LENGTH(op)          \
-    template <class _OTp>                      \
-        requires(dim == VecInfo<_OTp>::dim)    \
-    auto operator op(const _OTp& o) const {    \
-        Self<decltype(data[0] op o[0])> res;   \
-        for (size_t i = 0; i < _length; i++) { \
-            res[i] = data[i] op o[i];          \
-        }                                      \
-        return res;                            \
+#define __VEC_OP_VEC_ON_EQ_LENGTH(op)                                    \
+    template <class _OTp>                                                \
+        requires(dim == VecInfo<_OTp>::dim)                              \
+    auto operator op(const _OTp& o) const {                              \
+        Self<decltype(data[0] op o[0])> res;                             \
+        auto length = (_length > _OTp::length) ? _OTp::length : _length; \
+        for (size_t i = 0; i < length; i++) {                            \
+            res[i] = data[i] op o[i];                                    \
+        }                                                                \
+        return res;                                                      \
     }
     __VEC_OP_VEC_ON_EQ_LENGTH(+)
     __VEC_OP_VEC_ON_EQ_LENGTH(-)
@@ -880,7 +880,7 @@ class vec {
 #define __VEC_OP_ITEM_ON_OP_ABLE(op)                                       \
     template <class _OTp>                                                  \
         requires(VecInfo<_OTp>::dim == 0 || dim == VecInfo<_OTp>::dim + 1) \
-    inline constexpr auto operator op(const _OTp& o) {                     \
+    inline constexpr auto operator op(const _OTp& o) const {               \
         Self<decltype(data[0] op o)> res;                                  \
         for (size_t i = 0; i < _length; i++) {                             \
             res[i] = data[i] op o;                                         \

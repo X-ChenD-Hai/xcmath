@@ -54,11 +54,11 @@ template <class _Tp, size_t _length = 3, size_t _dim = 4>
 mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _Tp angle,
                             const vec<_Tp, _length>& axis) {
     auto _axis = axis.normalize();
+    auto res = mat<_Tp, _dim, _dim>::eye();
     angle = radians(angle);
     _Tp c = std::cos(angle);
     _Tp s = std::sin(angle);
     _Tp t = 1 - c;
-    auto res = mat<_Tp, _dim, _dim>::eye();
     res[0][0] = c + t * _axis[0] * _axis[0];
     res[0][1] = t * _axis[0] * _axis[1] - s * _axis[2];
     res[0][2] = t * _axis[0] * _axis[2] + s * _axis[1];
@@ -85,8 +85,8 @@ mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _Tp angle,
 template <class _Tp, class _MTp = _Tp, size_t _dim = 3>
     requires(std::is_floating_point_v<_Tp> && (_dim == 3 || _dim == 4))
 mat<_MTp, _dim, _dim> rotate(const mat<_MTp, _dim, _dim>& m, _Tp angle) {
-    angle = radians(angle);
     auto res = mat<_Tp, _dim, _dim>::eye();
+    angle = radians(angle);
     res[1][1] = res[0][0] = std::cos(angle);
     res[0][1] = -(res[1][0] = std::sin(angle));
     return res ^ m;
@@ -159,11 +159,11 @@ template <class _Tp, class _ATp = _Tp, size_t _dim = 4>
              (_dim == 4 || _dim == 3))
 constexpr mat<_Tp, _dim, _dim> scale(const mat<_Tp, _dim, _dim>& m,
                                      const vec<_ATp, _dim - 1>& v) {
-    auto res = mat<_Tp, _dim, _dim>(m);
+    auto res = mat<_Tp, _dim, _dim>::eye();
     res[0][0] *= v[0];
     res[1][1] *= v[1];
     if constexpr (_dim == 4) res[2][2] *= v[2];
-    return res;
+    return res ^ m;
 }
 /**
  * @brief Scale a matrix by a vector
