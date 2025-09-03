@@ -120,14 +120,14 @@ mat<_Tp, _dim, _dim> rotate(const mat<_Tp, _dim, _dim>& m, _ATp angle, _Tp x,
  * @param v Translation vector
  * @return Translated matrix
  */
-template <class _Tp, size_t _len = 4>
-    requires(_len == 4 || _len == 3)
+template <class _Tp, size_t _len = 4, size_t _vlen = 3>
+    requires((_len == 4 || _len == 3) && _vlen == _len - 1)
 constexpr mat<_Tp, _len, _len> translate(const mat<_Tp, _len, _len>& m,
-                                         const vec<_Tp, _len - 1>& v) {
+                                         const vec<_Tp, _vlen>& v) {
     auto res = m;
-    res[0][_len - 1] += v[0];
-    res[1][_len - 1] += v[1];
-    if constexpr (_len == 4) res[2][_len - 1] += v[2];
+    res[0][_vlen] += v[0];
+    res[1][_vlen] += v[1];
+    if constexpr (_len == 4) res[2][_vlen] += v[2];
     return res;
 }
 
