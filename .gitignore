@@ -10,4 +10,5 @@
 !vcpkg.json
 !CMakePresets.json
 !Doxyfile
+!xmake.lua
 docs/doxygen
