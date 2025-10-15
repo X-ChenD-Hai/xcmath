@@ -332,6 +332,10 @@ class vec {
         }
     }
 
+    constexpr vec(const vec<_Tp, _length>& other)
+        requires(std::is_trivially_copy_constructible_v<_Tp>)
+    = default;
+
     /**
      * @brief Copy constructor
      * @param other Vector to copy
@@ -343,6 +347,9 @@ class vec {
         }
     }
 
+    constexpr vec(vec<_Tp, _length>&& o)
+        requires(std::is_trivially_move_constructible_v<_Tp>)
+    = default;
     /**
      * @brief Move constructor
      * @param o Vector to move from
@@ -396,6 +403,9 @@ class vec {
         return data[index];
     }
 
+    constexpr vec<_Tp, _length>& operator=(const vec<_Tp, _length>& other)
+        requires(std::is_trivially_copy_assignable_v<_Tp>)
+    = default;
     /**
      * @brief Copy assignment operator
      *
@@ -408,6 +418,9 @@ class vec {
         }
         return *this;
     }
+    constexpr vec<_Tp, _length>& operator=(vec<_Tp, _length>&& other)
+        requires(std::is_trivially_move_assignable_v<_Tp>)
+    = default;
 
     /**
      * @brief Move assignment operator
