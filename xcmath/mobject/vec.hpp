@@ -804,6 +804,8 @@ class vec {
     __VEC_OP_VEC_ON_EQ_LENGTH(&)
     __VEC_OP_VEC_ON_EQ_LENGTH(|)
     __VEC_OP_VEC_ON_EQ_LENGTH(^)
+    __VEC_OP_VEC_ON_EQ_LENGTH(&&)
+    __VEC_OP_VEC_ON_EQ_LENGTH(||)
     __VEC_OP_VEC_ON_EQ_LENGTH(==)
     __VEC_OP_VEC_ON_EQ_LENGTH(!=)
     __VEC_OP_VEC_ON_EQ_LENGTH(>)
@@ -811,7 +813,24 @@ class vec {
     __VEC_OP_VEC_ON_EQ_LENGTH(>=)
     __VEC_OP_VEC_ON_EQ_LENGTH(<=)
 #undef __VEC_OP_VEC_ON_EQ_LENGTH
-
+#define __VEC_OPEQ_VEC_ON_EQ_LENGTH(op)                        \
+    template <class _OTp>                                      \
+        requires(dim == VecInfo<_OTp>::dim)                    \
+    inline constexpr auto& operator op(const _OTp & o) { \
+        for (size_t i = 0; i < _length; i++) {                 \
+            data[i] op o[i];                                   \
+        }                                                      \
+        return *this;                                          \
+    }
+    __VEC_OPEQ_VEC_ON_EQ_LENGTH(+=)
+    __VEC_OPEQ_VEC_ON_EQ_LENGTH(-=)
+    __VEC_OPEQ_VEC_ON_EQ_LENGTH(*=)
+    __VEC_OPEQ_VEC_ON_EQ_LENGTH(/=)
+    __VEC_OPEQ_VEC_ON_EQ_LENGTH(%=)
+    __VEC_OPEQ_VEC_ON_EQ_LENGTH(&=)
+    __VEC_OPEQ_VEC_ON_EQ_LENGTH(|=)
+    __VEC_OPEQ_VEC_ON_EQ_LENGTH(^=)
+#undef __VEC_OPEQ_VEC_ON_EQ_LENGTH
 /**
  * @def __VEC_OP_ITEM_ON_OP_ABLE
  * @brief Macro generating vector-scalar operations
@@ -836,6 +855,8 @@ class vec {
     __VEC_OP_ITEM_ON_OP_ABLE(%)
     __VEC_OP_ITEM_ON_OP_ABLE(&)
     __VEC_OP_ITEM_ON_OP_ABLE(|)
+    __VEC_OP_ITEM_ON_OP_ABLE(&&)
+    __VEC_OP_ITEM_ON_OP_ABLE(||)
     __VEC_OP_ITEM_ON_OP_ABLE(^)
     __VEC_OP_ITEM_ON_OP_ABLE(==)
     __VEC_OP_ITEM_ON_OP_ABLE(!=)
@@ -844,6 +865,24 @@ class vec {
     __VEC_OP_ITEM_ON_OP_ABLE(>=)
     __VEC_OP_ITEM_ON_OP_ABLE(<=)
 #undef __VEC_OP_ITEM_ON_OP_ABLE
+
+#define __VEC_OPEQ_ITEM_ON_OP_ABLE(op)                                     \
+    template <class _OTp>                                                  \
+        requires(VecInfo<_OTp>::dim == 0 || dim == VecInfo<_OTp>::dim + 1) \
+    inline constexpr auto& operator op(const _OTp & o) {                   \
+        for (size_t i = 0; i < _length; i++) {                             \
+            data[i] op o[i];                                               \
+        }                                                                  \
+        return *this;                                                      \
+    }
+    __VEC_OPEQ_ITEM_ON_OP_ABLE(+=)
+    __VEC_OPEQ_ITEM_ON_OP_ABLE(-=)
+    __VEC_OPEQ_ITEM_ON_OP_ABLE(*=)
+    __VEC_OPEQ_ITEM_ON_OP_ABLE(/=)
+    __VEC_OPEQ_ITEM_ON_OP_ABLE(%=)
+    __VEC_OPEQ_ITEM_ON_OP_ABLE(&=)
+    __VEC_OPEQ_ITEM_ON_OP_ABLE(|=)
+    __VEC_OPEQ_ITEM_ON_OP_ABLE(^=)
 };
 
 #define __ITEM_OP_VEC_ON_OP_ENABLE(op)                                   \
@@ -863,10 +902,15 @@ __ITEM_OP_VEC_ON_OP_ENABLE(/)
 __ITEM_OP_VEC_ON_OP_ENABLE(%)
 __ITEM_OP_VEC_ON_OP_ENABLE(&)
 __ITEM_OP_VEC_ON_OP_ENABLE(|)
-__ITEM_OP_VEC_ON_OP_ENABLE(^) __ITEM_OP_VEC_ON_OP_ENABLE(==)
-    __ITEM_OP_VEC_ON_OP_ENABLE(!=) __ITEM_OP_VEC_ON_OP_ENABLE(>)
-        __ITEM_OP_VEC_ON_OP_ENABLE(<) __ITEM_OP_VEC_ON_OP_ENABLE(>=)
-            __ITEM_OP_VEC_ON_OP_ENABLE(<=)
+__ITEM_OP_VEC_ON_OP_ENABLE(&&)
+__ITEM_OP_VEC_ON_OP_ENABLE(||)
+__ITEM_OP_VEC_ON_OP_ENABLE(^)
+__ITEM_OP_VEC_ON_OP_ENABLE(==)
+__ITEM_OP_VEC_ON_OP_ENABLE(!=)
+__ITEM_OP_VEC_ON_OP_ENABLE(>)
+__ITEM_OP_VEC_ON_OP_ENABLE(<)
+__ITEM_OP_VEC_ON_OP_ENABLE(>=)
+__ITEM_OP_VEC_ON_OP_ENABLE(<=)
 #undef __ITEM_OP_VEC_ON_OP_ENABLE
 }  // namespace xcmath
 #endif  // VEC_H
