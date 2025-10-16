@@ -146,3 +146,8 @@ TEST(Quaternion, ConvertToOtherTypeQuaternion) {
     EXPECT_EQ(v2.j(), 3);
     EXPECT_EQ(v2.k(), 4);
 }
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

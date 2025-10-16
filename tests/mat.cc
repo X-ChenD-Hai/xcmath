@@ -130,3 +130,8 @@ TEST(Method, nat_muti_vec) {
     // EXPECT_TRUE((res == result).all());
     // EXPECT_FALSE((res == result2).all());
 }
+
+int main(int argc, char** argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}
