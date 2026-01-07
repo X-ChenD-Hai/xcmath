@@ -185,3 +185,8 @@ constexpr mat<_Tp, _dim, _dim> scale(const mat<_Tp, _dim, _dim>& m,
 }  // namespace xcmath
 
 #endif
+
+template <typename T1, typename T2, typename T3>
+auto lerp(T1 a, T2 b, T3 t) {
+    return a + ((b - a) * t);
+}
