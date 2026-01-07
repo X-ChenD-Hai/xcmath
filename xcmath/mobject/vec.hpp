@@ -593,6 +593,9 @@ class vec {
         }
         return res;
     }
+    constexpr const DataType* value_ptr() const {
+        return reinterpret_cast<const DataType*>(this);
+    }
 
     /**
      * @brief Compute distance to another vector
@@ -813,14 +816,14 @@ class vec {
     __VEC_OP_VEC_ON_EQ_LENGTH(>=)
     __VEC_OP_VEC_ON_EQ_LENGTH(<=)
 #undef __VEC_OP_VEC_ON_EQ_LENGTH
-#define __VEC_OPEQ_VEC_ON_EQ_LENGTH(op)                        \
-    template <class _OTp>                                      \
-        requires(dim == VecInfo<_OTp>::dim)                    \
+#define __VEC_OPEQ_VEC_ON_EQ_LENGTH(op)                  \
+    template <class _OTp>                                \
+        requires(dim == VecInfo<_OTp>::dim)              \
     inline constexpr auto& operator op(const _OTp & o) { \
-        for (size_t i = 0; i < _length; i++) {                 \
-            data[i] op o[i];                                   \
-        }                                                      \
-        return *this;                                          \
+        for (size_t i = 0; i < _length; i++) {           \
+            data[i] op o[i];                             \
+        }                                                \
+        return *this;                                    \
     }
     __VEC_OPEQ_VEC_ON_EQ_LENGTH(+=)
     __VEC_OPEQ_VEC_ON_EQ_LENGTH(-=)
