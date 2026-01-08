@@ -6,6 +6,8 @@
  * @date 2023-10-05
  */
 #pragma once
+#include <cstddef>
+#include <tuple>
 #ifndef XCMATH_FUNCTION_HPP
 #define XCMATH_FUNCTION_HPP
 
@@ -181,12 +183,26 @@ constexpr mat<_Tp, _dim, _dim> scale(const mat<_Tp, _dim, _dim>& m,
                                      const _STp s) {
     return scale(m, vec<_Tp, _dim - 1>(s));
 }
+template <typename T1, typename T2, typename T3>
+auto lerp(const T1& a, const T2& b, const T3& t) {
+    return a + ((b - a) * t);
+}
+
+template <typename Fn, typename Vt, typename Dt>
+auto derivative(const Dt& dx, const Fn& fn, const Vt& x) {
+    return (fn(x + (dx / 2)) - fn(x - (dx / 2))) / dx;
+}
+template <size_t paramater_pos, typename Fn, typename Dt, typename... Vts>
+auto partical_derivative(const Dt& dx, const Fn& fn, const Vts&... x) {
+    std::tuple<Vts...> params1(x...), params2(x...);
+    std::get<paramater_pos>(params1) -= dx / 2;
+    std::get<paramater_pos>(params2) += dx / 2;
+    return [&]<size_t... idx>(std::index_sequence<idx...>)  {
+        return (fn(std::get<idx>(params2)...) - fn(std::get<idx>(params1)...)) /
+               dx;
+    }(std::index_sequence_for<Vts...>());
+}
 
 }  // namespace xcmath
 
 #endif
-
-template <typename T1, typename T2, typename T3>
-auto lerp(T1 a, T2 b, T3 t) {
-    return a + ((b - a) * t);
-}
